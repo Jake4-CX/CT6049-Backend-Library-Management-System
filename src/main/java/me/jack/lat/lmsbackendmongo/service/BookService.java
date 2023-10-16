@@ -7,6 +7,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.result.InsertOneResult;
 import me.jack.lat.lmsbackendmongo.model.Book;
+import me.jack.lat.lmsbackendmongo.model.BookAuthor;
+import me.jack.lat.lmsbackendmongo.model.BookCategory;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -26,7 +28,10 @@ public class BookService {
 
     public BookService() {
 
-        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
+        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true)
+                .register(BookAuthor.class)
+                .register(BookCategory.class)
+                .build();
         CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
 
         this.booksCollection = MongoDBUtil.getMongoClient()
@@ -90,6 +95,13 @@ public class BookService {
 
         if (isDuplicateBookName(newBook.getBookName())) {
             return false;
+        }
+
+        if (newBook.getBookAuthor() == null) {
+            newBook.setBookAuthor(new BookAuthor());
+        }
+        if (newBook.getBookCategory() == null) {
+            newBook.setBookCategory(new BookCategory());
         }
 
         booksCollection.insertOne(newBook);

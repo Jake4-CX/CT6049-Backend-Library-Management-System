@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.books;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
@@ -15,23 +16,24 @@ import java.util.Map;
 public class GetBooksResource {
 
     @GET
+    @PermitAll
     public Response getBooks(@QueryParam("sort") String sort, @QueryParam("filter") String filter, @QueryParam("page") Integer page, @QueryParam("limit") Integer limit) {
 
-//        if (sort == null || sort.isEmpty()) {
-//            sort = "";
-//        }
-//
-//        if (filter == null || filter.isEmpty()) {
-//            filter = "";
-//        }
-//
-//        if (page < 0) {
-//            page = 0;
-//        }
-//
-//        if (limit < 20) {
-//            limit = 20;
-//        }
+        if (sort == null || sort.isEmpty()) {
+            sort = "";
+        }
+
+        if (filter == null || filter.isEmpty()) {
+            filter = "";
+        }
+
+        if (page < 0) {
+            page = 0;
+        }
+
+        if (limit < 20) {
+            limit = 20;
+        }
 
         Map<String, Object> response = new HashMap<>();
         BookService bookService = new BookService();
@@ -40,13 +42,18 @@ public class GetBooksResource {
 
         response.put("message", "success");
         response.put("books", books);
+
+        final String finalSort = sort;
+        final String finalFilter = filter;
+        final int finalPage = page;
+        final int finalLimit = limit;
+
         response.put("settings", new HashMap<String, Object>() {{
-            put("sort", sort);
-            put("filter", filter);
-            put("page", page);
-            put("limit", limit);
-        }}
-        );
+            put("sort", finalSort);
+            put("filter", finalFilter);
+            put("page", finalPage);
+            put("limit", finalLimit);
+        }});
 
         return Response.ok(response).build();
     }
