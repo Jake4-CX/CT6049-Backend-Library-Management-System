@@ -9,17 +9,10 @@ import me.jack.lat.lmsbackendmongo.model.Book;
 import me.jack.lat.lmsbackendmongo.model.BookAuthor;
 import me.jack.lat.lmsbackendmongo.model.BookCategory;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
-import org.bson.codecs.configuration.CodecProvider;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class BookService {
 
@@ -27,16 +20,8 @@ public class BookService {
 
     public BookService() {
 
-        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true)
-                .register(BookAuthor.class)
-                .register(BookCategory.class)
-                .build();
-        CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
-
-        this.booksCollection = MongoDBUtil.getMongoClient()
-                .getDatabase("lms")
-                .withCodecRegistry(pojoCodecRegistry)
-                .getCollection("books", Book.class);
+        this.booksCollection = MongoDBUtil.getMongoDatastore()
+                .getCollection(Book.class);
     }
 
     public List<Book> getBooks(String sort, String filter, int page, int limit) {

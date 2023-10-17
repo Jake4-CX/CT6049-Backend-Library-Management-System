@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.books;
 
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
@@ -17,21 +18,13 @@ public class GetBooksResource {
 
     @GET
     @UnprotectedRoute
-    public Response getBooks(@QueryParam("sort") String sort, @QueryParam("filter") String filter, @QueryParam("page") Integer page, @QueryParam("limit") Integer limit) {
+    public Response getBooks(@DefaultValue("") @QueryParam("sort") String sort, @DefaultValue("") @QueryParam("filter") String filter, @DefaultValue("0") @QueryParam("page") Integer page, @DefaultValue("20") @QueryParam("limit") Integer limit) {
 
-        if (sort == null || sort.isEmpty()) {
-            sort = "";
-        }
-
-        if (filter == null || filter.isEmpty()) {
-            filter = "";
-        }
-
-        if (page == null || page < 0) {
+        if (page < 0) {
             page = 0;
         }
 
-        if (limit == null || limit < 20) {
+        if (limit < 20) {
             limit = 20;
         }
 
@@ -40,7 +33,6 @@ public class GetBooksResource {
 
         List<Book> books = bookService.getBooks(sort, filter, page, limit);
 
-        response.put("message", "success");
         response.put("books", books);
 
         final String finalSort = sort;

@@ -1,17 +1,27 @@
 package me.jack.lat.lmsbackendmongo.model;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
+
 import java.util.Date;
 
+@Entity("books")
 public class Book {
 
-    String bookName;
-    Integer bookISBN;
-    String bookDescription;
-    Integer bookQuantity;
-    Date bookPublishedDate;
+    @Id
+    private ObjectId bookId;
+    private String bookName;
+    private Integer bookISBN;
+    private String bookDescription;
+    private Integer bookQuantity;
+    private Date bookPublishedDate;
 
-    BookCategory bookCategory;
-    BookAuthor bookAuthor;
+    @Reference
+    private BookCategory bookCategory;
+    @Reference
+    private BookAuthor bookAuthor;
 
     public String getBookName() {
         return bookName;
