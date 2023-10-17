@@ -1,9 +1,9 @@
 package me.jack.lat.lmsbackendmongo.resources.books;
 
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.model.Book;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 
@@ -14,7 +14,7 @@ import java.util.Map;
 public class CreateBookResource {
 
     @POST
-    @RolesAllowed("admin")
+    @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createBook(Book newBook) {
 

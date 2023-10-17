@@ -2,8 +2,6 @@ package me.jack.lat.lmsbackendmongo.security;
 
 import jakarta.annotation.Priority;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -12,6 +10,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
+import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 
 import java.io.IOException;
 
@@ -26,12 +26,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(PermitAll.class)) {
+        if (resourceInfo.getResourceMethod().isAnnotationPresent(UnprotectedRoute.class)) {
             return;
         }
 
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(RolesAllowed.class)) {
-            String role = resourceInfo.getResourceMethod().getAnnotation(RolesAllowed.class).value()[0];
+        if (resourceInfo.getResourceMethod().isAnnotationPresent(RestrictedRoles.class)) {
+            String role = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value()[0];
 
             if (authorizationHeader == null || authorizationHeader.trim().isEmpty()) {
                 requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Missing or invalid token").build());

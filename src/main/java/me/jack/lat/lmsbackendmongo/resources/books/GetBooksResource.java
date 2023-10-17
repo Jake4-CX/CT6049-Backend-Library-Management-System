@@ -1,10 +1,10 @@
 package me.jack.lat.lmsbackendmongo.resources.books;
 
-import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.model.Book;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 
@@ -16,7 +16,7 @@ import java.util.Map;
 public class GetBooksResource {
 
     @GET
-    @PermitAll
+    @UnprotectedRoute
     public Response getBooks(@QueryParam("sort") String sort, @QueryParam("filter") String filter, @QueryParam("page") Integer page, @QueryParam("limit") Integer limit) {
 
         if (sort == null || sort.isEmpty()) {
@@ -27,11 +27,11 @@ public class GetBooksResource {
             filter = "";
         }
 
-        if (page < 0) {
+        if (page == null || page < 0) {
             page = 0;
         }
 
-        if (limit < 20) {
+        if (limit == null || limit < 20) {
             limit = 20;
         }
 
