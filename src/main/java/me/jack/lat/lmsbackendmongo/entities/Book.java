@@ -1,4 +1,4 @@
-package me.jack.lat.lmsbackendmongo.model;
+package me.jack.lat.lmsbackendmongo.entities;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
@@ -38,6 +38,22 @@ public class Book {
 
     public Book() {
         this.bookPublishedDate = new Date();
+    }
+
+    public Book(String bookName, Integer bookISBN, String bookDescription, Integer bookQuantity, Date bookPublishedDate, BookCategory bookCategory, BookAuthor bookAuthor) {
+        this.bookName = bookName;
+        this.bookISBN = bookISBN;
+        this.bookDescription = bookDescription;
+
+        this.bookQuantity = bookQuantity;
+        this.bookPublishedDate = bookPublishedDate;
+
+        this.bookCategory = bookCategory;
+        this.bookAuthor = bookAuthor;
+    }
+
+    public ObjectId getBookId() {
+        return bookId;
     }
 
     public String getBookName() {

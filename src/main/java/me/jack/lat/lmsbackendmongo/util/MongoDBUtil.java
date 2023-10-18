@@ -14,7 +14,8 @@ public class MongoDBUtil {
 
     static {
         mongoDatastore = Morphia.createDatastore(
-                MongoClients.create(MONGODB_URI)
+                MongoClients.create(MONGODB_URI),
+                "lms"
         );
 
         mongoDatastore.getMapper().mapPackage(

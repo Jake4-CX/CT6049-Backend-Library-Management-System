@@ -4,7 +4,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
-import me.jack.lat.lmsbackendmongo.model.Book;
+import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 
 import java.util.HashMap;
@@ -16,12 +16,12 @@ public class CreateBookResource {
     @POST
     @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createBook(Book newBook) {
+    public Response createBook(NewBook newBook) {
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
 
-        BookService bookService = new BookService();
-        boolean isBookCreated = bookService.createBook(newBook);
+         BookService bookService = new BookService();
+         boolean isBookCreated = bookService.createBook(newBook);
 
         if (isBookCreated) {
             response.put("message", "success");

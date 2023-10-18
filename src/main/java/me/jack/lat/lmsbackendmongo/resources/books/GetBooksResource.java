@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
-import me.jack.lat.lmsbackendmongo.model.Book;
+import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 
 import java.util.HashMap;

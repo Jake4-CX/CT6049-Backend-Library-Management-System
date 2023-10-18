@@ -1,23 +1,25 @@
-package me.jack.lat.lmsbackendmongo.model;
+package me.jack.lat.lmsbackendmongo.entities;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import org.bson.types.ObjectId;
 
 @Entity("bookAuthors")
 public class BookAuthor {
 
     @Id
-    private String bookAuthorId;
+    private ObjectId bookAuthorId;
 
     private String authorFirstName;
     private String authorLastName;
 
-    public String getBookAuthorId() {
-        return bookAuthorId;
+    public BookAuthor(String authorFirstName, String authorLastName) {
+        this.authorFirstName = authorFirstName;
+        this.authorLastName = authorLastName;
     }
 
-    public void setBookAuthorId(String bookAuthorId) {
-        this.bookAuthorId = bookAuthorId;
+    public ObjectId getBookAuthorId() {
+        return bookAuthorId;
     }
 
     public String getAuthorFirstName() {

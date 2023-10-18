@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
-import me.jack.lat.lmsbackendmongo.model.BookAuthor;
+import me.jack.lat.lmsbackendmongo.model.NewBookAuthor;
 import me.jack.lat.lmsbackendmongo.service.AuthorService;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ public class CreateAuthorResource {
     @POST
     @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createBookAuthor(BookAuthor newBookAuthor) {
+    public Response createBookAuthor(NewBookAuthor newBookAuthor) {
 
         Map<String, Object> response = new HashMap<>();
 

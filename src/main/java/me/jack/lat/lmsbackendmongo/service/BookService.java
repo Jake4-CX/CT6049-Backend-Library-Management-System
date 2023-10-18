@@ -5,13 +5,14 @@ import com.mongodb.client.MongoCollection;
 
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import me.jack.lat.lmsbackendmongo.model.Book;
-import me.jack.lat.lmsbackendmongo.model.BookAuthor;
-import me.jack.lat.lmsbackendmongo.model.BookCategory;
+import me.jack.lat.lmsbackendmongo.entities.Book;
+import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
+import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class BookService {
@@ -21,7 +22,8 @@ public class BookService {
     public BookService() {
 
         this.booksCollection = MongoDBUtil.getMongoDatastore()
-                .getCollection(Book.class);
+                .getDatabase()
+                .getCollection("books", Book.class);
     }
 
     public List<Book> getBooks(String sort, String filter, int page, int limit) {
@@ -75,20 +77,38 @@ public class BookService {
         return books;
     }
 
-    public boolean createBook(Book newBook) {
+    public boolean createBook(NewBook newBook) {
 
         if (isDuplicateBookName(newBook.getBookName())) {
             return false;
         }
 
-        if (newBook.getBookAuthor() == null) {
-            newBook.setBookAuthor(new BookAuthor());
-        }
-        if (newBook.getBookCategory() == null) {
-            newBook.setBookCategory(new BookCategory());
+        // ToDo: Get bookAuthor and bookCategory from database
+
+        AuthorService authorService = new AuthorService();
+
+        BookAuthor bookAuthor = authorService.getAuthorFromId(newBook.getBookAuthorId().toString());
+
+        if (bookAuthor == null) {
+            // ToDo: Return error message - author not found
+            return false;
         }
 
-        booksCollection.insertOne(newBook);
+//        if (newBook.getBookCategory() == null) {
+//            newBook.setBookCategory(new BookCategory());
+//        }
+
+        booksCollection.insertOne(
+                new Book(
+                        newBook.getBookName(),
+                        newBook.getBookISBN(),
+                        newBook.getBookDescription(),
+                        newBook.getBookQuantity(),
+                        new Date(),
+                        null,
+                        bookAuthor
+                )
+        );
 
         return true;
     }

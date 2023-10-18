@@ -1,9 +1,9 @@
 package me.jack.lat.lmsbackendmongo.service;
 
 import com.mongodb.client.MongoCollection;
-import dev.morphia.query.filters.Filter;
-import dev.morphia.query.filters.Filters;
-import me.jack.lat.lmsbackendmongo.model.BookAuthor;
+import com.mongodb.client.model.Filters;
+import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
+import me.jack.lat.lmsbackendmongo.model.NewBookAuthor;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.conversions.Bson;
 
@@ -13,33 +13,42 @@ public class AuthorService {
 
     public AuthorService() {
         this.authorsCollection = MongoDBUtil.getMongoDatastore()
-                .getCollection(BookAuthor.class);
+                .getDatabase()
+                .getCollection("bookAuthors", BookAuthor.class);
     }
 
-    public boolean createAuthor(BookAuthor newAuthor) {
+    public BookAuthor getAuthorFromId(String authorId) {
+        return authorsCollection.find(
+                (Bson) Filters.eq("_id", authorId)
+        ).first();
+    }
 
-        if (isDuplicateAuthor(newAuthor)) {
-            return false;
-        }
+    public boolean createAuthor(NewBookAuthor newAuthor) {
 
-        if (newAuthor.getAuthorFirstName() == null || newAuthor.getAuthorLastName() == null) {
-            return false;
-        }
+//        if (isDuplicateAuthor(newAuthor)) {
+//            return false;
+//        }
 
-        authorsCollection.insertOne(newAuthor);
+//        if (newAuthor.getAuthorFirstName() == null || newAuthor.getAuthorLastName() == null) {
+//            return false;
+//        }
+
+        BookAuthor bookAuthor = new BookAuthor(newAuthor.getAuthorFirstName(), newAuthor.getAuthorLastName());
+
+        authorsCollection.insertOne(bookAuthor);
 
         return true;
     }
 
-    private boolean isDuplicateAuthor(BookAuthor newAuthor) {
+    private boolean isDuplicateAuthor(NewBookAuthor newAuthor) {
 
-        Filter filterRequirements =  Filters.and(
+        Bson filterRequirements =  Filters.and(
                 Filters.eq("authorFirstName", newAuthor.getAuthorFirstName()),
                 Filters.eq("authorLastName", newAuthor.getAuthorLastName())
         );
 
         long count = authorsCollection.countDocuments(
-                (Bson) filterRequirements
+                filterRequirements
         );
 
         return count > 0;
