@@ -13,6 +13,9 @@ public class BookAuthor {
     private String authorFirstName;
     private String authorLastName;
 
+    public BookAuthor() {
+    }
+
     public BookAuthor(String authorFirstName, String authorLastName) {
         this.authorFirstName = authorFirstName;
         this.authorLastName = authorLastName;
@@ -36,5 +39,9 @@ public class BookAuthor {
 
     public void setAuthorLastName(String authorLastName) {
         this.authorLastName = authorLastName;
+    }
+
+    public void setBookAuthorId(ObjectId bookAuthorId) {
+        this.bookAuthorId = bookAuthorId;
     }
 }

@@ -16,6 +16,7 @@ public class CreateBookResource {
     @POST
     @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createBook(NewBook newBook) {
 
         Map<String, Object> response = new HashMap<>();

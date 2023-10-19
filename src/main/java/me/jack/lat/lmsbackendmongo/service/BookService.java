@@ -1,80 +1,31 @@
 package me.jack.lat.lmsbackendmongo.service;
 
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
 
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
+import dev.morphia.Datastore;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.filters.Filters;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
 import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
-import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class BookService {
 
-    private final MongoCollection<Book> booksCollection;
+    private final Datastore datastore;
+    private static final Logger logger = Logger.getLogger(BookService.class.getName());
 
     public BookService() {
-
-        this.booksCollection = MongoDBUtil.getMongoDatastore()
-                .getDatabase()
-                .getCollection("books", Book.class);
+        this.datastore = MongoDBUtil.getMongoDatastore();
     }
 
     public List<Book> getBooks(String sort, String filter, int page, int limit) {
-        List<Book> books = new ArrayList<>();
-        Bson filterQuery = null;
+        FindOptions findOptions = new FindOptions().skip((page - 1) * limit).limit(limit);
 
-        if (filter != null) {
-            filterQuery = Filters.or(
-                    Filters.regex("bookName", filter, "i"),
-                    Filters.regex("bookAuthor.name", filter, "i")
-            );
-        }
-
-        // Sort based on sort criteria (e.g., recent, least recent, etc.)
-        Bson sortQuery = null;
-
-        switch (sort.toLowerCase()) {
-            case "recent":
-                sortQuery = Sorts.descending("bookPublishedDate"); // Sort by bookPublishedDate descending (recent)
-                break;
-            case "least-recent":
-                sortQuery = Sorts.ascending("bookPublishedDate"); // Sort by bookPublishedDate ascending (least recent)
-                break;
-            case "name":
-                sortQuery = Sorts.ascending("bookName"); // Sort by bookName ascending
-                break;
-            default:
-                sortQuery = Sorts.descending("bookPublishedDate");
-                break;
-        }
-
-        int skip = (page - 1) * limit;
-
-        FindIterable<Book> bookCursor;
-        if (filterQuery != null) {
-            bookCursor = booksCollection.find(filterQuery)
-                    .sort(sortQuery)
-                    .skip(skip)
-                    .limit(limit);
-        } else {
-            bookCursor = booksCollection.find()
-                    .sort(sortQuery)
-                    .skip(skip)
-                    .limit(limit);
-        }
-
-        for (Book book : bookCursor) {
-            books.add(book);
-        }
-
-        return books;
+        return datastore.find(Book.class).iterator(findOptions).toList();
     }
 
     public boolean createBook(NewBook newBook) {
@@ -87,34 +38,38 @@ public class BookService {
 
         AuthorService authorService = new AuthorService();
 
-        BookAuthor bookAuthor = authorService.getAuthorFromId(newBook.getBookAuthorId().toString());
+        BookAuthor bookAuthor = authorService.getAuthorFromId(newBook.getBookAuthorId());
+
+        logger.info(("bookAuthor id: '" + newBook.getBookAuthorId() + "'"));
 
         if (bookAuthor == null) {
             // ToDo: Return error message - author not found
+            logger.info("bookAuthor is null");
             return false;
         }
 
-//        if (newBook.getBookCategory() == null) {
-//            newBook.setBookCategory(new BookCategory());
-//        }
-
-        booksCollection.insertOne(
-                new Book(
-                        newBook.getBookName(),
-                        newBook.getBookISBN(),
-                        newBook.getBookDescription(),
-                        newBook.getBookQuantity(),
-                        new Date(),
-                        null,
-                        bookAuthor
-                )
+        Book book = new Book(
+                newBook.getBookName(),
+                newBook.getBookISBN(),
+                newBook.getBookDescription(),
+                newBook.getBookQuantity(),
+                new Date(),
+                null,
+                bookAuthor
         );
+
+        try {
+            datastore.save(book);
+        } catch (Exception e) {
+            logger.severe("Failed saving book: " + e.getMessage());
+            return false;
+        }
 
         return true;
     }
 
     private boolean isDuplicateBookName(String bookName) {
-        long count = booksCollection.countDocuments(Filters.eq("bookName", bookName));
-        return count > 0;
+        return datastore.find(Book.class).filter(Filters.eq("bookName", bookName)).count() > 0;
+
     }
 }

@@ -17,10 +17,10 @@ public class NewBook {
     Integer bookQuantity;
 
     @NotNull
-    Integer bookCategoryId;
+    String bookCategoryId;
 
     @NotNull
-    Integer bookAuthorId;
+    String bookAuthorId;
 
     public String getBookName() {
         return bookName;
@@ -38,11 +38,35 @@ public class NewBook {
         return bookQuantity;
     }
 
-    public Integer getBookCategoryId() {
+    public String getBookCategoryId() {
         return bookCategoryId;
     }
 
-    public Integer getBookAuthorId() {
+    public String getBookAuthorId() {
         return bookAuthorId;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
+
+    public void setBookISBN(Integer bookISBN) {
+        this.bookISBN = bookISBN;
+    }
+
+    public void setBookDescription(String bookDescription) {
+        this.bookDescription = bookDescription;
+    }
+
+    public void setBookQuantity(Integer bookQuantity) {
+        this.bookQuantity = bookQuantity;
+    }
+
+    public void setBookCategoryId(String bookCategoryId) {
+        this.bookCategoryId = bookCategoryId;
+    }
+
+    public void setBookAuthorId(String bookAuthorId) {
+        this.bookAuthorId = bookAuthorId;
     }
 }

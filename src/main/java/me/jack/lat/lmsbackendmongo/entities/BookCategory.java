@@ -12,6 +12,14 @@ public class BookCategory {
     private String categoryName;
     private String categoryDescription;
 
+    public BookCategory() {
+    }
+
+    public BookCategory(String categoryName, String categoryDescription) {
+        this.categoryName = categoryName;
+        this.categoryDescription = categoryDescription;
+    }
+
     public ObjectId getBookCategoryId() {
         return bookCategoryId;
     }

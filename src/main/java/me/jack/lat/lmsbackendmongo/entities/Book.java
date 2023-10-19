@@ -5,10 +5,6 @@ import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
-
 import java.util.Date;
 
 @Entity("books")
@@ -17,22 +13,15 @@ public class Book {
     @Id
     private ObjectId bookId;
 
-    @NotNull
-    @Size(min = 2, max = 50)
     private String bookName;
-    @NotNull
     private Integer bookISBN;
-    @NotEmpty
     private String bookDescription;
-    @NotNull
     private Integer bookQuantity;
     private Date bookPublishedDate;
 
-    @NotNull
     @Reference
     private BookCategory bookCategory;
 
-    @NotNull
     @Reference
     private BookAuthor bookAuthor;
 

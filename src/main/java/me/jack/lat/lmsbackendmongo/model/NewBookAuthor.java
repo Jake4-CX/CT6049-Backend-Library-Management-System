@@ -5,9 +5,17 @@ import jakarta.validation.constraints.NotEmpty;
 public class NewBookAuthor {
 
     @NotEmpty
-    String authorFirstName;
+    private String authorFirstName;
     @NotEmpty
-    String authorLastName;
+    private String authorLastName;
+
+    public NewBookAuthor() {
+    }
+
+    public NewBookAuthor(String authorFirstName, String authorLastName) {
+        this.authorFirstName = authorFirstName;
+        this.authorLastName = authorLastName;
+    }
 
     public String getAuthorFirstName() {
         return authorFirstName;
@@ -15,5 +23,21 @@ public class NewBookAuthor {
 
     public String getAuthorLastName() {
         return authorLastName;
+    }
+
+    public void setAuthorFirstName(String authorFirstName) {
+        this.authorFirstName = authorFirstName;
+    }
+
+    public void setAuthorLastName(String authorLastName) {
+        this.authorLastName = authorLastName;
+    }
+
+    @Override
+    public String toString() {
+        return "NewBookAuthor{" +
+                "authorFirstName='" + authorFirstName + '\'' +
+                ", authorLastName='" + authorLastName + '\'' +
+                '}';
     }
 }

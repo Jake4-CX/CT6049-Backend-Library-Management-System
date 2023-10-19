@@ -19,8 +19,10 @@ public class MongoDBUtil {
         );
 
         mongoDatastore.getMapper().mapPackage(
-                "me.jack.lat.lmsbackendmongo.model"
+                "me.jack.lat.lmsbackendmongo.entities"
         );
+
+        mongoDatastore.ensureIndexes();
     }
 
     public static Datastore getMongoDatastore() {
