@@ -6,6 +6,7 @@ import dev.morphia.query.FindOptions;
 import dev.morphia.query.filters.Filters;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
+import me.jack.lat.lmsbackendmongo.entities.BookCategory;
 import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 
@@ -37,6 +38,7 @@ public class BookService {
         // ToDo: Get bookAuthor and bookCategory from database
 
         AuthorService authorService = new AuthorService();
+        CategoryService categoryService = new CategoryService();
 
         BookAuthor bookAuthor = authorService.getAuthorFromId(newBook.getBookAuthorId());
 
@@ -48,20 +50,30 @@ public class BookService {
             return false;
         }
 
+        BookCategory bookCategory = categoryService.getCategoryFromId(newBook.getBookCategoryId());
+
+        logger.info(("bookCategory id: '" + newBook.getBookCategoryId() + "'"));
+
+        if (bookCategory == null) {
+            //ToDo: Return error message - category not found
+            logger.info("bookCategory is null");
+            return false;
+        }
+
         Book book = new Book(
                 newBook.getBookName(),
                 newBook.getBookISBN(),
                 newBook.getBookDescription(),
                 newBook.getBookQuantity(),
                 new Date(),
-                null,
+                bookCategory,
                 bookAuthor
         );
 
         try {
             datastore.save(book);
         } catch (Exception e) {
-            logger.severe("Failed saving book: " + e.getMessage());
+            logger.warning("Failed saving book: " + e.getMessage());
             return false;
         }
 

@@ -1,25 +1,28 @@
 package me.jack.lat.lmsbackendmongo.model;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class NewBook {
 
-    @NotNull
-    @Size(min = 2, max = 50)
+    @NotNull(message = "Book name cannot be null")
+    @Size(min = 2, max = 50, message = "Book name must be between 2 and 50 characters")
     String bookName;
-    @NotNull
+
+    @Digits(integer = 13, fraction = 0, message = "Book ISBN must be a number")
     Integer bookISBN;
-    @NotEmpty
+    @NotEmpty(message = "Book description cannot be empty")
     String bookDescription;
-    @NotNull
+
+    @Digits(integer = 9, fraction = 0, message = "Book quantity must be a number")
     Integer bookQuantity;
 
-    @NotNull
+    @NotNull(message = "Book category ID cannot be null")
     String bookCategoryId;
 
-    @NotNull
+    @NotNull(message = "Book author ID cannot be null")
     String bookAuthorId;
 
     public String getBookName() {

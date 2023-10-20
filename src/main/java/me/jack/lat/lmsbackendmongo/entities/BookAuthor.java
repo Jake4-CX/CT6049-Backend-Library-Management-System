@@ -9,7 +9,6 @@ public class BookAuthor {
 
     @Id
     private ObjectId bookAuthorId;
-
     private String authorFirstName;
     private String authorLastName;
 
@@ -21,8 +20,8 @@ public class BookAuthor {
         this.authorLastName = authorLastName;
     }
 
-    public ObjectId getBookAuthorId() {
-        return bookAuthorId;
+    public String getBookAuthorId() {
+        return bookAuthorId.toString();
     }
 
     public String getAuthorFirstName() {

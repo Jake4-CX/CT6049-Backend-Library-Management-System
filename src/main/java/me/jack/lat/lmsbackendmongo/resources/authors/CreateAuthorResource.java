@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.authors;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,7 +21,7 @@ public class CreateAuthorResource {
     @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBookAuthor(NewBookAuthor newBookAuthor) {
+    public Response createBookAuthor(@Valid NewBookAuthor newBookAuthor) {
 
         Map<String, Object> response = new HashMap<>();
 
