@@ -11,17 +11,18 @@ import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.types.ObjectId;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 public class AuthorService {
 
     private final Datastore datastore;
+    private static final Logger logger = Logger.getLogger(AuthorService.class.getName());
 
     public AuthorService() {
         this.datastore = MongoDBUtil.getMongoDatastore();
     }
 
     public BookAuthor getAuthorFromId(String authorId) {
-
         Query<BookAuthor> query = datastore.find(BookAuthor.class).filter("_id", new ObjectId(authorId));
         return query.first();
     }
@@ -38,7 +39,12 @@ public class AuthorService {
 
         BookAuthor bookAuthor = new BookAuthor(newAuthor.getAuthorFirstName(), newAuthor.getAuthorLastName());
 
-        datastore.save(bookAuthor);
+        try {
+            datastore.save(bookAuthor);
+        } catch (Exception e) {
+            logger.warning("Failed saving author: " + e.getMessage());
+            return false;
+        }
 
         return true;
     }

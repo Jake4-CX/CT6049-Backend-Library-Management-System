@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotEmpty;
 
 public class NewBookAuthor {
 
-    @NotEmpty
+    @NotEmpty(message = "Author first name cannot be empty")
     private String authorFirstName;
-    @NotEmpty
+    @NotEmpty(message = "Author last name cannot be empty")
     private String authorLastName;
 
     public NewBookAuthor() {
@@ -33,11 +33,4 @@ public class NewBookAuthor {
         this.authorLastName = authorLastName;
     }
 
-    @Override
-    public String toString() {
-        return "NewBookAuthor{" +
-                "authorFirstName='" + authorFirstName + '\'' +
-                ", authorLastName='" + authorLastName + '\'' +
-                '}';
-    }
 }

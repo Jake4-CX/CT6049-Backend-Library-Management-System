@@ -1,30 +1,20 @@
-package me.jack.lat.lmsbackendmongo.entities;
+package me.jack.lat.lmsbackendmongo.model;
 
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.IndexOptions;
-import dev.morphia.annotations.Indexed;
-import org.bson.types.ObjectId;
+import jakarta.validation.constraints.NotEmpty;
 
-@Entity("bookCategories")
-public class BookCategory {
+public class NewBookCategory {
 
-    @Id
-    private ObjectId bookCategoryId;
-    @Indexed(options = @IndexOptions(unique = true))
+    @NotEmpty(message = "Category name cannot be empty")
     private String categoryName;
+    @NotEmpty(message = "Category description cannot be empty")
     private String categoryDescription;
 
-    public BookCategory() {
+    public NewBookCategory() {
     }
 
-    public BookCategory(String categoryName, String categoryDescription) {
+    public NewBookCategory(String categoryName, String categoryDescription) {
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
-    }
-
-    public String getBookCategoryId() {
-        return bookCategoryId.toString();
     }
 
     public String getCategoryName() {

@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.books;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -17,7 +18,7 @@ public class CreateBookResource {
     @RestrictedRoles("admin")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBook(NewBook newBook) {
+    public Response createBook(@Valid NewBook newBook) {
 
         Map<String, Object> response = new HashMap<>();
 

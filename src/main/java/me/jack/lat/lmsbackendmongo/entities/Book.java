@@ -1,8 +1,6 @@
 package me.jack.lat.lmsbackendmongo.entities;
 
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Reference;
+import dev.morphia.annotations.*;
 import org.bson.types.ObjectId;
 
 import java.util.Date;
@@ -12,8 +10,9 @@ public class Book {
 
     @Id
     private ObjectId bookId;
-
+    @Indexed(options = @IndexOptions(unique = true))
     private String bookName;
+    @Indexed(options = @IndexOptions(unique = true))
     private Integer bookISBN;
     private String bookDescription;
     private Integer bookQuantity;
@@ -41,8 +40,8 @@ public class Book {
         this.bookAuthor = bookAuthor;
     }
 
-    public ObjectId getBookId() {
-        return bookId;
+    public String getBookId() {
+        return bookId.toString();
     }
 
     public String getBookName() {
