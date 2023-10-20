@@ -8,12 +8,14 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -31,10 +33,16 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         }
 
         if (resourceInfo.getResourceMethod().isAnnotationPresent(RestrictedRoles.class)) {
+            HashMap<String, Object> response = new HashMap<>();
             String role = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value()[0];
 
             if (authorizationHeader == null || authorizationHeader.trim().isEmpty()) {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Missing or invalid token").build());
+                response.put("error", new HashMap<String, Object>() {{
+                    put("message", "Missing or invalid token");
+                    put("type", 401);
+                }});
+
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build());
                 return;
             }
 
@@ -43,21 +51,39 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // authToken = "secret:admin" where secret is the secret key and admin is the role
 
             if (authTokenParts.length != 2) {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Missing or invalid token").build());
+
+                response.put("error", new HashMap<String, Object>() {{
+                    put("message", "Missing or invalid token");
+                    put("type", 401);
+                }});
+
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build());
                 return;
             }
 
             String secretKey = authTokenParts[0];
 
             if (!secretKey.equals("secret")) {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid secret: " + secretKey).build());
+
+                response.put("error", new HashMap<String, Object>() {{
+                    put("message", "Invalid authorization secret");
+                    put("type", 401);
+                }});
+
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid secret: " + secretKey).type(MediaType.APPLICATION_JSON).build());
                 return;
             }
 
             String roleFromToken = authTokenParts[1];
 
             if (!roleFromToken.equals(role)) {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Role - given: " + roleFromToken).build());
+
+                response.put("error", new HashMap<String, Object>() {{
+                    put("message", "Invalid authorization secret");
+                    put("type", 401);
+                }});
+
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Role - given: " + roleFromToken).type(MediaType.APPLICATION_JSON).build());
                 return;
             }
 
