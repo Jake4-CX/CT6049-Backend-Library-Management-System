@@ -5,8 +5,10 @@ import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.model.NewUser;
+import me.jack.lat.lmsbackendmongo.util.JwtUtil;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class UserService {
@@ -51,13 +53,31 @@ public class UserService {
         return count > 0;
     }
 
-    public boolean loginValidation(String userEmail, String userPassword) {
+    public HashMap<String, Object> loginValidation(String userEmail, String userPassword) {
         User user = datastore.find(User.class)
                 .filter(Filters.eq("userEmail", userEmail))
                 .first();
         if (user == null) {
-            return false;
+            return null;
         }
-        return BCrypt.verifyer().verify(userPassword.toCharArray(), user.getUserPassword()).verified;
+
+        // Compare hashed password with provided password
+        if (BCrypt.verifyer().verify(userPassword.toCharArray(), user.getUserPassword()).verified) {
+            user.setUserPassword(null);
+            HashMap<String, Object> returnEntity = new HashMap<>();
+            returnEntity.put("user", user);
+
+            // ToDo: Generate JWT token (access & refresh) and return it with the user entity
+            HashMap<String, String> token = new HashMap<>();
+
+            token.put("accessToken", JwtUtil.generateAccessToken(user.getUserId(), user.getUserRole().name()));
+            token.put("refreshToken", JwtUtil.generateRefreshToken(user.getUserId()));
+
+            returnEntity.put("token", token);
+
+            return returnEntity;
+        } else {
+            return null;
+        }
     }
 }

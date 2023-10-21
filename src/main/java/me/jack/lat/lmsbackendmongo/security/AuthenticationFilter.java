@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.annotation.Priority;
 
 import jakarta.ws.rs.Priorities;
@@ -13,6 +14,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
+import me.jack.lat.lmsbackendmongo.entities.User;
+import me.jack.lat.lmsbackendmongo.util.JwtUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,67 +31,40 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(UnprotectedRoute.class)) {
+        if (!(resourceInfo.getResourceMethod().isAnnotationPresent(RestrictedRoles.class)) || (resourceInfo.getResourceMethod().isAnnotationPresent(UnprotectedRoute.class))) {
             return;
         }
 
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(RestrictedRoles.class)) {
-            HashMap<String, Object> response = new HashMap<>();
-            String role = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value()[0];
-
-            if (authorizationHeader == null || authorizationHeader.trim().isEmpty()) {
-                response.put("error", new HashMap<String, Object>() {{
-                    put("message", "Missing or invalid token");
-                    put("type", 401);
-                }});
-
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build());
-                return;
-            }
-
-            String authToken = authorizationHeader.substring("Bearer".length()).trim();
-            String[] authTokenParts = authToken.split(":");
-            // authToken = "secret:admin" where secret is the secret key and admin is the role
-
-            if (authTokenParts.length != 2) {
-
-                response.put("error", new HashMap<String, Object>() {{
-                    put("message", "Missing or invalid token");
-                    put("type", 401);
-                }});
-
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build());
-                return;
-            }
-
-            String secretKey = authTokenParts[0];
-
-            if (!secretKey.equals("secret")) {
-
-                response.put("error", new HashMap<String, Object>() {{
-                    put("message", "Invalid authorization secret");
-                    put("type", 401);
-                }});
-
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid secret: " + secretKey).type(MediaType.APPLICATION_JSON).build());
-                return;
-            }
-
-            String roleFromToken = authTokenParts[1];
-
-            if (!roleFromToken.equals(role)) {
-
-                response.put("error", new HashMap<String, Object>() {{
-                    put("message", "Invalid authorization secret");
-                    put("type", 401);
-                }});
-
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Role - given: " + roleFromToken).type(MediaType.APPLICATION_JSON).build());
-                return;
-            }
-
-            requestContext.setProperty("role", roleFromToken);
-
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            abortWithUnauthorized(requestContext, "Missing or invalid token");
+            return;
         }
+
+        String token = authorizationHeader.substring("Bearer".length()).trim();
+        User.Role role = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value();
+
+        try {
+            Claims claimsJws = JwtUtil.decodeAccessToken(token);
+            String userRole = claimsJws.get("role", String.class);
+
+            if (!userRole.equals(role.toString())) {
+                abortWithUnauthorized(requestContext, "Invalid Role - given: " + userRole + ", required: " + role);
+                return;
+            }
+
+            requestContext.setProperty("role", userRole);
+
+        } catch (Exception e) {
+            abortWithUnauthorized(requestContext, "Invalid token");
+        }
+    }
+
+    private void abortWithUnauthorized(ContainerRequestContext requestContext, String message) {
+        HashMap<String, Object> response = new HashMap<>();
+        response.put("error", new HashMap<String, Object>() {{
+            put("message", message);
+            put("type", 401);
+        }});
+        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build());
     }
 }
