@@ -8,6 +8,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
+import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.model.NewBookAuthor;
 import me.jack.lat.lmsbackendmongo.service.AuthorService;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 public class CreateAuthorResource {
 
     @POST
-    @RestrictedRoles("admin")
+    @RestrictedRoles(User.Role.ADMIN)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBookAuthor(@Valid NewBookAuthor newBookAuthor) {

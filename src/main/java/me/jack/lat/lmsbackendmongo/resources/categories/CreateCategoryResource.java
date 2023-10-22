@@ -8,6 +8,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
+import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.model.NewBookCategory;
 import me.jack.lat.lmsbackendmongo.service.CategoryService;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 public class CreateCategoryResource {
 
     @POST
-    @RestrictedRoles("admin")
+    @RestrictedRoles(User.Role.ADMIN)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBookCategory(@Valid NewBookCategory newBookCategory) {
