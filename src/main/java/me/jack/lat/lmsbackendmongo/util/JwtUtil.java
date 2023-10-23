@@ -24,7 +24,7 @@ public class JwtUtil {
 
     public static String generateRefreshToken(String userId) {
         return Jwts.builder().subject(userId).expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
-                .signWith(Keys.hmacShaKeyFor(ACCESS_TOKEN_SECRET_KEY.getBytes()))
+                .signWith(Keys.hmacShaKeyFor(REFRESH_TOKEN_SECRET_KEY.getBytes()))
                 .compact();
     }
 
@@ -34,5 +34,13 @@ public class JwtUtil {
 
     public static Claims decodeRefreshToken(String jwt) {
         return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(REFRESH_TOKEN_SECRET_KEY.getBytes())).build().parseSignedClaims(jwt).getPayload();
+    }
+
+    public static Date getExpirationDateFromAccessToken(String token) {
+        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(ACCESS_TOKEN_SECRET_KEY.getBytes())).build().parseSignedClaims(token).getPayload().getExpiration();
+    }
+
+    public static Date getExpirationDateFromRefreshToken(String token) {
+        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(REFRESH_TOKEN_SECRET_KEY.getBytes())).build().parseSignedClaims(token).getPayload().getExpiration();
     }
 }
