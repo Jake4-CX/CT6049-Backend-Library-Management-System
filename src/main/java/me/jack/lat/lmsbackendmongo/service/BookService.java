@@ -36,8 +36,6 @@ public class BookService {
             return false;
         }
 
-        // ToDo: Get bookAuthor and bookCategory from database
-
         AuthorService authorService = new AuthorService();
         CategoryService categoryService = new CategoryService();
 
@@ -94,6 +92,16 @@ public class BookService {
 
     public Book getBookFromName(String bookName) {
         return datastore.find(Book.class).filter(Filters.eq("bookName", bookName)).first();
+    }
+
+    public List<Book> searchBooks(String searchQuery) {
+
+        return datastore.find(Book.class)
+                .filter(Filters.regex("bookName")
+                        .pattern(searchQuery)
+                        .caseInsensitive()
+                ).iterator()
+                .toList();
     }
 
 }
