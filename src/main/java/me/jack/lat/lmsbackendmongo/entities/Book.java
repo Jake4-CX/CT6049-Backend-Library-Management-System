@@ -44,6 +44,10 @@ public class Book {
         return bookId.toString();
     }
 
+    public void setBookId(String bookId) {
+        this.bookId = new ObjectId(bookId);
+    }
+
     public String getBookName() {
         return bookName;
     }

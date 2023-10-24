@@ -9,6 +9,7 @@ import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
 import me.jack.lat.lmsbackendmongo.entities.BookCategory;
 import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
+import org.bson.types.ObjectId;
 
 import java.util.Date;
 import java.util.List;
@@ -84,4 +85,15 @@ public class BookService {
         return datastore.find(Book.class).filter(Filters.eq("bookName", bookName)).count() > 0;
 
     }
+
+    public Book getBookFromId(String bookId) {
+        ObjectId objectId = new ObjectId(bookId);
+
+        return datastore.find(Book.class).filter(Filters.eq("_id", objectId)).first();
+    }
+
+    public Book getBookFromName(String bookName) {
+        return datastore.find(Book.class).filter(Filters.eq("bookName", bookName)).first();
+    }
+
 }
