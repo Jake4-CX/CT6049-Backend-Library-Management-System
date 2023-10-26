@@ -1,7 +1,6 @@
 package me.jack.lat.lmsbackendmongo.service;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.mongodb.client.result.DeleteResult;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
 import io.jsonwebtoken.Claims;
@@ -9,6 +8,7 @@ import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.model.NewUser;
 import me.jack.lat.lmsbackendmongo.util.JwtUtil;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
+import org.bson.types.ObjectId;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -97,7 +97,7 @@ public class UserService {
 
     public User findUserById(String userId) {
         return datastore.find(User.class)
-                .filter(Filters.eq("userId", userId))
+                .filter(Filters.eq("userId", new ObjectId(userId)))
                 .first();
     }
 
@@ -110,15 +110,11 @@ public class UserService {
     public HashMap<String, Object> refreshUser(String refreshToken) {
 
         try {
-            logger.info("Attempting to refresh user with refresh token: " + refreshToken);
             Claims claims = JwtUtil.decodeRefreshToken(refreshToken);
-            logger.info("Decoded refresh token: " + claims.toString());
 
             String userId = claims.getSubject();
-            logger.info("User ID from refresh token: " + userId);
 
             User user = findUserByRefreshToken(refreshToken);
-            logger.info("User from refresh token: " + user.getUserEmail());
 
             if (user == null) {
                 // User not found
@@ -127,36 +123,41 @@ public class UserService {
 
             if (!Objects.equals(user.getUserId(), userId)) {
                 // User ID in token does not match user ID in database
-                logger.warning("User ID in token does not match user ID in database");
                 return null;
             }
 
-            logger.info("User ID in token matches user ID in database");
-
             String newAccessToken = JwtUtil.generateAccessToken(user.getUserId(), user.getUserRole().name());
             String newRefreshToken = JwtUtil.generateRefreshToken(user.getUserId());
-
-            logger.info("New access token: " + newAccessToken);
-            logger.info("New refresh token: " + newRefreshToken);
 
             user.addRefreshToken(new User.RefreshToken(newRefreshToken, JwtUtil.getExpirationDateFromRefreshToken(newRefreshToken)));
             user.removeRefreshToken(refreshToken);
 
             datastore.save(user);
 
-            logger.info("Saved user to database");
-
             HashMap<String, Object> returnEntity = new HashMap<>();
             returnEntity.put("accessToken", newAccessToken);
             returnEntity.put("refreshToken", newRefreshToken);
-
-            logger.info("Returning new access token and refresh token");
 
             return returnEntity;
 
         } catch (Exception e) {
             // Invalid token
             logger.warning("Invalid refresh token: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public User validateAccessToken(String accessToken) {
+        try {
+            Claims claims = JwtUtil.decodeAccessToken(accessToken);
+            String userId = claims.getSubject();
+
+            User user = findUserById(userId);
+            user.setUserPassword(null);
+            user.setRefreshTokens(null);
+
+            return user;
+        } catch (Exception e) {
             return null;
         }
     }
