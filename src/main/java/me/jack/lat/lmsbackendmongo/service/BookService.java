@@ -4,9 +4,7 @@ package me.jack.lat.lmsbackendmongo.service;
 import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.filters.Filters;
-import me.jack.lat.lmsbackendmongo.entities.Book;
-import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
-import me.jack.lat.lmsbackendmongo.entities.BookCategory;
+import me.jack.lat.lmsbackendmongo.entities.*;
 import me.jack.lat.lmsbackendmongo.model.NewBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.types.ObjectId;
@@ -102,6 +100,26 @@ public class BookService {
                         .caseInsensitive()
                 ).iterator()
                 .toList();
+    }
+
+    public boolean borrowBook(String bookId, User user) {
+        Book requestedBook = getBookFromId(bookId);
+
+        if (requestedBook == null) {
+            // A Book does not exist with this Id
+            return false;
+        }
+
+        LoanedBookService loanedBookService = new LoanedBookService();
+        List<LoanedBook> loanedBooks = loanedBookService.getUnreturnedBooksWithBookId(requestedBook.getBookId());
+
+        if (loanedBooks.size() >= requestedBook.getBookQuantity()) {
+            // All books borrowed. Deny user's request
+            return false;
+        }
+
+        return loanedBookService.createLoanedBook(requestedBook, user);
+
     }
 
 }
