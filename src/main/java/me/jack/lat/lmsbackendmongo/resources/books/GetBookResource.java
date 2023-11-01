@@ -6,10 +6,10 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.service.BookService;
+import org.bson.types.ObjectId;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Path("/books/{bookId}")
 public class GetBookResource {
@@ -20,12 +20,21 @@ public class GetBookResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBook(@PathParam("bookId") String bookId) {
 
-        // ToDo: Check if book exists with given bookId.
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            new ObjectId(bookId);
+
+        } catch (Exception e) {
+            // BookId is not a valid ObjectId (24 character hex string). Return 404.
+
+            response.put("message", "No Book found with this id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         BookService bookService = new BookService();
         Book selectedBook = bookService.getBookFromId(bookId);
 
-        Map<String, Object> response = new HashMap<>();
         response.put("bookId", bookId);
 
         if (selectedBook != null) {
