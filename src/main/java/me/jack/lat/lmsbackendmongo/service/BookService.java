@@ -102,23 +102,23 @@ public class BookService {
                 .toList();
     }
 
-    public boolean borrowBook(String bookId, User user) {
+    public Error borrowBook(String bookId, User user) {
         Book requestedBook = getBookFromId(bookId);
 
         if (requestedBook == null) {
             // A Book does not exist with this Id
-            return false;
+            return new Error("Book does not exist with this Id.");
         }
 
         LoanedBookService loanedBookService = new LoanedBookService();
-        List<LoanedBook> loanedBooks = loanedBookService.getUnreturnedBooksWithBookId(requestedBook.getBookId());
+        List<LoanedBook> loanedBooks = loanedBookService.getUnreturnedBooksWithBook(requestedBook);
 
         if (loanedBooks.size() >= requestedBook.getBookQuantity()) {
             // All books borrowed. Deny user's request
-            return false;
+            return new Error("There are no books available to borrow. Please try again later");
         }
 
-        return loanedBookService.createLoanedBook(requestedBook, user);
+        return loanedBookService.createLoanedBook(requestedBook, user) ? null : new Error("You are already borrowing this book.");
 
     }
 

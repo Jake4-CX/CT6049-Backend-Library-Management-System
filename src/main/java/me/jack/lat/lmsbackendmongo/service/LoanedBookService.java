@@ -23,48 +23,56 @@ public class LoanedBookService {
     }
 
     /**
-     * Get all loaned books (regardless of returned status), with BookId.
+     * Get all loaned books (regardless of returned status), with Book.
      *
-     * @param bookId    bookId to search for
+     * @param book    bookId to search for
      */
 
-    public List<LoanedBook> getLoanedBooksWithBookId(String bookId) {
-        ObjectId objectId = new ObjectId(bookId);
+    public List<LoanedBook> getLoanedBooksWithBook(Book book) {
 
         return datastore.find(LoanedBook.class)
-                .filter(Filters.eq("_id", objectId))
+                .filter(
+                        Filters.eq("book", book)
+                )
                 .iterator()
                 .toList();
     }
 
     /**
-     * Get all loaned books, that have not been returned, with BookId.
+     * Get all loaned books, that have not been returned, with Book.
      *
-     * @param bookId    bookId to search for
+     * @param book    bookId to search for
+     *
+     * @return List<LoanedBook>
      */
-    public List<LoanedBook> getUnreturnedBooksWithBookId(String bookId) {
-        ObjectId objectId = new ObjectId(bookId);
+    public List<LoanedBook> getUnreturnedBooksWithBook(Book book) {
 
         return datastore.find(LoanedBook.class)
                 .filter(
-                        Filters.eq("_id", objectId),
+                        Filters.eq("book", book),
                         Filters.eq("returnedAt", null)
                 )
                 .iterator()
                 .toList();
     }
 
-//    /**
-//     * Get all loaned books, that have been returned, with BookId.
-//     *
-//     * @param bookId    bookId to search for
-//     */
-//    public List<LoanedBook> getReturnedBooksWithBookId(String bookId) {
-//        ObjectId objectId = new ObjectId(bookId);
-//
-//
-//        // Todo: Put function here
-//    }
+    /**
+     * Get all loaned books, that have been returned, with Book.
+     *
+     * @param book    bookId to search for
+     *
+     * @return List<LoanedBook>
+     */
+    public List<LoanedBook> getReturnedBooksWithBook(Book book) {
+
+        return datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.eq("book", book),
+                        Filters.exists("returnedAt")
+                )
+                .iterator()
+                .toList();
+    }
 
 
     /**
@@ -102,10 +110,41 @@ public class LoanedBookService {
      * @return boolean
      */
     public boolean isDuplicateLoanedBook(Book book, User user) {
-        return datastore.find(LoanedBook.class).filter(
-                Filters.eq("book.bookId", new ObjectId(book.getBookId())),
-                Filters.eq("user.userId", new ObjectId(user.getUserId()))
-        ).count() > 0;
+        List<LoanedBook> loanedBooks = datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.eq("book", book),
+                        Filters.eq("user", user),
+                        Filters.eq("returnedAt", null)
+                )
+                .iterator()
+                .toList();
+
+        return !loanedBooks.isEmpty();
+    }
+
+    /**
+     * Return all overdue books.
+     *
+     * @return List<LoanedBook>
+     */
+
+    public List<LoanedBook> findOverdueBooks() {
+        Date fourteenDaysAgo = getFourteenDaysAgo();
+
+        var query = datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.and(
+                                Filters.lt("loanedAt", fourteenDaysAgo),
+                                Filters.eq("returnedAt", null)
+                        )
+                );
+
+        return query.iterator().toList();
+    }
+
+    private Date getFourteenDaysAgo() {
+        final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+        return new Date(System.currentTimeMillis() - 14 * MILLIS_PER_DAY);
     }
 
 }
