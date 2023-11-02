@@ -18,6 +18,7 @@ import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.util.JwtUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @Provider
@@ -41,18 +42,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         }
 
         String token = authorizationHeader.substring("Bearer".length()).trim();
-        User.Role role = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value();
+        User.Role[] roles = resourceInfo.getResourceMethod().getAnnotation(RestrictedRoles.class).value();
 
         try {
             Claims claimsJws = JwtUtil.decodeAccessToken(token);
             String userRole = claimsJws.get("role", String.class);
 
-            if (!userRole.equals(role.toString())) {
-                abortWithUnauthorized(requestContext, "Invalid Role - given: " + userRole + ", required: " + role);
+            // Prevent users from accessing resources that they are not allowed to access.
+            if (!Arrays.asList(roles).contains(User.Role.valueOf(userRole))) {
+                abortWithUnauthorized(requestContext, "Invalid Role - given: " + userRole);
                 return;
             }
 
             requestContext.setProperty("role", userRole);
+            requestContext.setProperty("userId", claimsJws.getSubject());
 
         } catch (Exception e) {
             abortWithUnauthorized(requestContext, "Invalid token");

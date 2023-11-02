@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RestrictedRoles {
-    User.Role value() default User.Role.USER;
+    User.Role[] value() default {User.Role.USER};
 }
