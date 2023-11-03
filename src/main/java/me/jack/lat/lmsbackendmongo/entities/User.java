@@ -6,12 +6,9 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Entity("users")
 public class User {
-
-    private static final Logger logger = Logger.getLogger(User.class.getName());
 
     @Id
     private ObjectId userId;

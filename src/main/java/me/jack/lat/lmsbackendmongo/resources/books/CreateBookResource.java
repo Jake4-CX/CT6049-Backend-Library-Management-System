@@ -16,7 +16,7 @@ import java.util.Map;
 public class CreateBookResource {
 
     @POST
-    @RestrictedRoles(User.Role.ADMIN)
+    @RestrictedRoles({User.Role.ADMIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBook(@Valid NewBook newBook) {
