@@ -31,8 +31,8 @@ public class LoanedBook {
         this.loanedAt = new Date();
     }
 
-    public ObjectId getLoanedBookId() {
-        return loanedBookId;
+    public String getLoanedBookId() {
+        return loanedBookId.toString();
     }
 
     public void setLoanedBookId(ObjectId loanedBookId) {
