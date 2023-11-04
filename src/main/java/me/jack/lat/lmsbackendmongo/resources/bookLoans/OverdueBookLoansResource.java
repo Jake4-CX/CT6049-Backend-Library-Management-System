@@ -1,4 +1,4 @@
-package me.jack.lat.lmsbackendmongo.resources.books;
+package me.jack.lat.lmsbackendmongo.resources.bookLoans;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -14,16 +14,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/books/overdue")
-public class OverdueBooksResource {
+@Path("/loans/overdue")
+public class OverdueBookLoansResource {
 
     @GET
     @RestrictedRoles({User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getOverdueBooks() {
+    public Response getOverdueBookLoans() {
 
         LoanedBookService loanedBookService = new LoanedBookService();
-        List<LoanedBook> overdueBooks = loanedBookService.findOverdueBooks();
+        List<LoanedBook> overdueBooks = loanedBookService.findAllOverdueBooks();
 
         overdueBooks.forEach(loanedBook -> {
             User user = loanedBook.getUser();
