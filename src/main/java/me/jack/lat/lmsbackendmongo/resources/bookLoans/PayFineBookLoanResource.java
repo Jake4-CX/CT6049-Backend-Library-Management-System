@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.bookLoans;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -21,6 +22,8 @@ import java.util.Objects;
 
 @Path("/loans/{loanId}/pay-fine")
 public class PayFineBookLoanResource {
+
+    private static final Dotenv dotenv = Dotenv.configure().load();
 
     @GET
     @RestrictedRoles({User.Role.ADMIN})
@@ -70,6 +73,7 @@ public class PayFineBookLoanResource {
         // ToDo: implement fine payment? - Perhaps not needed, but could create a new fine payment entity.
 
         loanedBook.setReturnedAt(new Date());
+        loanedBook.setFinePaid(new LoanedBook.FinePaid(Double.parseDouble(dotenv.get("LATE_FINE_PER_DAY")) * loanedBookService.getDaysOverdue(loanedBook)));
 
         if (loanedBookService.updateLoanedBook(loanedBook)) {
             response.put("message", "success");

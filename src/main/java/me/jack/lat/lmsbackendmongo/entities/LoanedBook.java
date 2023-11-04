@@ -21,6 +21,8 @@ public class LoanedBook {
     private Date loanedAt;
     private Date returnedAt;
 
+    private FinePaid finePaid;
+
     public LoanedBook() {
         this.loanedAt = new Date();
     }
@@ -69,5 +71,44 @@ public class LoanedBook {
 
     public void setReturnedAt(Date returnedAt) {
         this.returnedAt = returnedAt;
+    }
+
+    public FinePaid getFinePaid() {
+        return finePaid;
+    }
+
+    public void setFinePaid(FinePaid finePaid) {
+        this.finePaid = finePaid;
+    }
+
+    @Entity("finePaid")
+    public static class FinePaid {
+        private Date paidAt;
+        private double amountPaid;
+
+        public FinePaid() {
+            this.paidAt = new Date();
+        }
+
+        public FinePaid(double amountPaid) {
+            this.amountPaid = amountPaid;
+            this.paidAt = new Date();
+        }
+
+        public Date getPaidAt() {
+            return paidAt;
+        }
+
+        public void setPaidAt(Date paidAt) {
+            this.paidAt = paidAt;
+        }
+
+        public double getAmountPaid() {
+            return amountPaid;
+        }
+
+        public void setAmountPaid(double amountPaid) {
+            this.amountPaid = amountPaid;
+        }
     }
 }

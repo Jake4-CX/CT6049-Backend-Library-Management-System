@@ -174,6 +174,20 @@ public class LoanedBookService {
     }
 
     /**
+     * Get the number of days overdue the loanedBook is.
+     *
+     * @param loanedBook  loanedBook to check
+     *
+     * @return int
+     */
+    public int getDaysOverdue(LoanedBook loanedBook) {
+        Date fourteenDaysAgo = getFourteenDaysAgo();
+
+        long diff = fourteenDaysAgo.getTime() - loanedBook.getLoanedAt().getTime();
+        return (int) (diff / (1000 * 60 * 60 * 24));
+    }
+
+    /**
      * Return all overdue books.
      *
      * @return List<LoanedBook>
@@ -330,6 +344,26 @@ public class LoanedBookService {
                 );
 
         return query.iterator().toList();
+    }
+
+    /**
+     * Return LoanedBook if the user has an active loan for the given book.
+     *
+     * @param book  book to relate against
+     * @param user  user to relate against
+     *
+     * @return LoanedBook
+     */
+    public LoanedBook findActiveLoanForBookAndUser(Book book, User user) {
+        return datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.and(
+                                Filters.eq("book", book),
+                                Filters.eq("user", user),
+                                Filters.eq("returnedAt", null)
+                        )
+                )
+                .first();
     }
 
 
