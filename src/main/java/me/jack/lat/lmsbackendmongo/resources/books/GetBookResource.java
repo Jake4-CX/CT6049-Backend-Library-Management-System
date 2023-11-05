@@ -39,10 +39,10 @@ public class GetBookResource {
         BookService bookService = new BookService();
         Book selectedBook = bookService.getBookFromId(bookId);
 
-        response.put("bookId", bookId);
-
         if (selectedBook != null) {
             response.put("book", selectedBook);
+
+            LoanedBookService loanedBookService = new LoanedBookService();
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 String authorizationToken = authorizationHeader.substring("Bearer".length()).trim();
@@ -50,13 +50,20 @@ public class GetBookResource {
                 UserService userService = new UserService();
                 User userEntity = userService.validateAccessToken(authorizationToken);
 
-                LoanedBookService loanedBookService = new LoanedBookService();
-                LoanedBook loanedBook = loanedBookService.findActiveLoanForBookAndUser(selectedBook, userEntity);
-                loanedBook.setUser(null);
-                loanedBook.setBook(null);
+                if (userEntity != null) {
+                    LoanedBook loanedBook = loanedBookService.findActiveLoanForBookAndUser(selectedBook, userEntity);
 
-                response.put("loanedBook", loanedBook);
+                    if (loanedBook != null) {
+                        loanedBook.setUser(null);
+                        loanedBook.setBook(null);
+
+                        response.put("loanedBook", loanedBook);
+                    }
+                }
+
             }
+
+            response.put("booksLoaned", loanedBookService.getUnreturnedBooksWithBook(selectedBook).size());
 
             response.put("message", "success");
             return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
