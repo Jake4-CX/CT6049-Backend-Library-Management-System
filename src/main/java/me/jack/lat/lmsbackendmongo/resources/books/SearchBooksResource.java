@@ -11,13 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/books/search/{bookName}")
+@Path("/books/search")
 public class SearchBooksResource {
 
 
     @GET
+    @Path("/{bookName}")
     @UnprotectedRoute
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchBooks(@PathParam("bookName") String bookName) {
 
@@ -25,12 +25,19 @@ public class SearchBooksResource {
         List<Book> bookResults = bookService.searchBooks(bookName);
 
         Map<String, Object> response = new HashMap<>();
-        Map<String, Object> settings = new HashMap<>();
 
-        settings.put("search", bookName);
-
-        response.put("settings", settings);
         response.put("books", bookResults);
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+    }
+
+    @GET
+    @UnprotectedRoute
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchBooksFallback() {
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("books", new List[] {});
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
