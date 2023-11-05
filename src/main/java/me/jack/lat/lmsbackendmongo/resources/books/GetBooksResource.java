@@ -5,8 +5,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
+import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.service.BookService;
+import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +33,22 @@ public class GetBooksResource {
 
         Map<String, Object> response = new HashMap<>();
         BookService bookService = new BookService();
+        LoanedBookService loanedBookService = new LoanedBookService();
 
         List<Book> books = bookService.getBooks(sort, filter, page, limit);
 
-        response.put("books", books);
+        List<Object> booksObject = new ArrayList<>();
+
+        books.forEach((book) -> {
+            List<LoanedBook> loanedBooks = loanedBookService.getUnreturnedBooksWithBook(book);
+            Map<String, Object> bookObject = new HashMap<>();
+            bookObject.put("book", book);
+            bookObject.put("booksLoaned", loanedBooks.size());
+
+            booksObject.add(bookObject);
+        });
+
+        response.put("books", booksObject);
 
         final String finalSort = sort;
         final String finalFilter = filter;
