@@ -18,12 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 @Path("/users/me/loans")
-public class GetAllUserBookLoansResource {
+public class GetAllCurrentUserBookLoansResource {
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUserBookLoans(@Context ContainerRequestContext requestContext) {
+    public Response getAllCurrentUserBookLoans(@Context ContainerRequestContext requestContext) {
 
         Map<String, Object> response = new HashMap<>();
 
