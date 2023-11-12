@@ -5,6 +5,7 @@ import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
 import dev.morphia.query.filters.Filters;
 import dev.morphia.query.filters.LogicalFilter;
+import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
 import me.jack.lat.lmsbackendmongo.model.NewBookAuthor;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
@@ -25,6 +26,11 @@ public class AuthorService {
     public BookAuthor getAuthorFromId(String authorId) {
         Query<BookAuthor> query = datastore.find(BookAuthor.class).filter("_id", new ObjectId(authorId));
         return query.first();
+    }
+
+    public Book[] getBooksFromAuthor(BookAuthor author) {
+        Query<Book> query = datastore.find(Book.class).filter("bookAuthor", author);
+        return query.iterator().toList().toArray(new Book[0]);
     }
 
     public boolean createAuthor(NewBookAuthor newAuthor) {
