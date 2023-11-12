@@ -4,6 +4,7 @@ import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
 import dev.morphia.query.filters.Filters;
+import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookCategory;
 import me.jack.lat.lmsbackendmongo.model.NewBookCategory;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
@@ -24,6 +25,11 @@ public class CategoryService {
     public BookCategory getCategoryFromId(String categoryId) {
         Query<BookCategory> query = datastore.find(BookCategory.class).filter("_id", new ObjectId(categoryId));
         return query.first();
+    }
+
+    public Book[] getBooksFromCategory(BookCategory category) {
+        Query<Book> query = datastore.find(Book.class).filter("bookCategory", category);
+        return query.iterator().toList().toArray(new Book[0]);
     }
 
     public boolean createCategory(NewBookCategory newBookCategory) {
