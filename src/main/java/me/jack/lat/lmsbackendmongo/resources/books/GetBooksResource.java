@@ -9,14 +9,21 @@ import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Path("/books")
 public class GetBooksResource {
+
+    public static final Logger logger = Logger.getLogger(GetBooksResource.class.getName());
 
     @GET
     @UnprotectedRoute
@@ -76,6 +83,20 @@ public class GetBooksResource {
 
     public Response getBooksSQL(String sort, String filter, Integer page, Integer limit) {
         Map<String, Object> response = new HashMap<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            String query = "SELECT * FROM books";
+
+            try (Statement statement = connection.createStatement()) {
+                statement.executeQuery(query);
+            } catch (SQLException e) {
+                logger.warning("SQL Exception2: " + e.getMessage());
+            }
+
+        } catch (SQLException e) {
+            logger.warning("SQL Exception: " + e.getMessage());
+        }
+
         response.put("message", "Not implemented yet - SQL");
         response.put("books", new List[]{});
 
