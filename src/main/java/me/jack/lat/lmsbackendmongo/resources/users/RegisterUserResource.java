@@ -1,13 +1,11 @@
 package me.jack.lat.lmsbackendmongo.resources.users;
 
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
+import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.model.NewUser;
 import me.jack.lat.lmsbackendmongo.service.UserService;
 
@@ -21,8 +19,21 @@ public class RegisterUserResource {
     @UnprotectedRoute
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(@Valid NewUser newUser) {
+    public Response createUser(@HeaderParam("Database-Type") String databaseType, @Valid NewUser newUser) {
 
+        if (databaseType == null || databaseType.isEmpty()) {
+            databaseType = DatabaseTypeEnum.MONGODB.toString();
+        }
+
+        if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
+            return createUserSQL(newUser);
+        } else {
+            return createUserMongoDB(newUser);
+        }
+
+    }
+
+    public Response createUserMongoDB(NewUser newUser) {
         Map<String, Object> response = new HashMap<>();
 
         UserService userService = new UserService();
@@ -35,5 +46,13 @@ public class RegisterUserResource {
             response.put("message", "User with the same email already exists.");
             return Response.status(Response.Status.CONFLICT).entity(response).build();
         }
+    }
+
+    public Response createUserSQL(NewUser newUser) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Not implemented yet - SQL");
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+
     }
 }

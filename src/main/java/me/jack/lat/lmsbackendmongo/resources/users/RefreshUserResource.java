@@ -2,16 +2,15 @@ package me.jack.lat.lmsbackendmongo.resources.users;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
+import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.UserService;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @Path("/users/refresh")
 public class RefreshUserResource {
@@ -40,8 +39,21 @@ public class RefreshUserResource {
     @UnprotectedRoute
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response refreshUser(@Valid RefreshToken refreshToken) {
+    public Response refreshUser(@HeaderParam("Database-Type") String databaseType, @Valid RefreshToken refreshToken) {
 
+        if (databaseType == null || databaseType.isEmpty()) {
+            databaseType = DatabaseTypeEnum.MONGODB.toString();
+        }
+
+        if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
+            return refreshUserSQL(refreshToken);
+        } else {
+            return refreshUserMongoDB(refreshToken);
+        }
+
+    }
+
+    public Response refreshUserMongoDB(RefreshToken refreshToken) {
         UserService userService = new UserService();
         HashMap<String, Object> returnEntity = userService.refreshUser(refreshToken.getRefreshToken());
 
@@ -54,6 +66,13 @@ public class RefreshUserResource {
             error.put("type", "401");
             return Response.status(Response.Status.UNAUTHORIZED).entity(error).type(MediaType.APPLICATION_JSON).build();
         }
+    }
+
+    public Response refreshUserSQL(RefreshToken refreshToken) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Not implemented yet - SQL");
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 
     }
 }

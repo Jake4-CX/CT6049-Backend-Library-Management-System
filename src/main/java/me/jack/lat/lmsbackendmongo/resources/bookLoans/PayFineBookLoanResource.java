@@ -1,10 +1,7 @@
 package me.jack.lat.lmsbackendmongo.resources.bookLoans;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -12,6 +9,7 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
+import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
 import org.bson.types.ObjectId;
 
@@ -28,20 +26,32 @@ public class PayFineBookLoanResource {
     @GET
     @RestrictedRoles({User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response payFineBookLoan(@PathParam("loanId") String loanId, @Context ContainerRequestContext requestContext) {
-
-        Map<String, Object> response = new HashMap<>();
+    public Response payFineBookLoan(@HeaderParam("Database-Type") String databaseType, @PathParam("loanId") String loanId, @Context ContainerRequestContext requestContext) {
 
         try {
             new ObjectId(loanId);
 
         } catch (Exception e) {
-
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "No LoanBook found with this id");
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
         String userId = (String) requestContext.getProperty("userId");
+
+        if (databaseType == null || databaseType.isEmpty()) {
+            databaseType = DatabaseTypeEnum.MONGODB.toString();
+        }
+
+        if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
+            return payFineBookLoanSQL(loanId, userId);
+        } else {
+            return payFineBookLoanMongoDB(loanId, userId);
+        }
+    }
+
+    public Response payFineBookLoanMongoDB(String loanId, String userId) {
+        Map<String, Object> response = new HashMap<>();
 
         LoanedBookService loanedBookService = new LoanedBookService();
         LoanedBook loanedBook = loanedBookService.getLoanedBookFromId(loanId);
@@ -85,5 +95,12 @@ public class PayFineBookLoanResource {
             }});
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
+    }
+
+    public Response payFineBookLoanSQL(String loanId, String userId) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Not implemented yet - SQL");
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 }

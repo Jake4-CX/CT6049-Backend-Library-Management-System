@@ -7,6 +7,7 @@ import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
+import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.BookService;
 import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
 import me.jack.lat.lmsbackendmongo.service.UserService;
@@ -22,7 +23,7 @@ public class GetBookResource {
     @UnprotectedRoute
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBook(@PathParam("bookId") String bookId, @HeaderParam("Authorization") String authorizationHeader) {
+    public Response getBook(@HeaderParam("Database-Type") String databaseType, @PathParam("bookId") String bookId, @HeaderParam("Authorization") String authorizationHeader) {
 
         Map<String, Object> response = new HashMap<>();
 
@@ -35,6 +36,21 @@ public class GetBookResource {
             response.put("message", "No Book found with this id");
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
+
+        if (databaseType == null || databaseType.isEmpty()) {
+            databaseType = DatabaseTypeEnum.MONGODB.toString();
+        }
+
+        if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
+            return getBookSQL(bookId, authorizationHeader);
+        } else {
+            return getBookMongoDB(bookId, authorizationHeader);
+        }
+
+    }
+
+    public Response getBookMongoDB(String bookId, String authorizationHeader) {
+        Map<String, Object> response = new HashMap<>();
 
         BookService bookService = new BookService();
         Book selectedBook = bookService.getBookFromId(bookId);
@@ -72,5 +88,12 @@ public class GetBookResource {
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
+    }
+
+    public Response getBookSQL(String bookId, String authorizationHeader) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Not implemented yet - SQL");
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 }
