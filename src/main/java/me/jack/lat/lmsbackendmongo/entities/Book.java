@@ -18,6 +18,8 @@ public class Book {
     private Integer bookQuantity;
     private Date bookPublishedDate;
 
+    private String bookThumbnailURL;
+
     @Reference
     private BookCategory bookCategory;
 
@@ -28,7 +30,7 @@ public class Book {
         this.bookPublishedDate = new Date();
     }
 
-    public Book(String bookName, Integer bookISBN, String bookDescription, Integer bookQuantity, Date bookPublishedDate, BookCategory bookCategory, BookAuthor bookAuthor) {
+    public Book(String bookName, Integer bookISBN, String bookDescription, Integer bookQuantity, Date bookPublishedDate, String bookThumbnailURL, BookCategory bookCategory, BookAuthor bookAuthor) {
         this.bookName = bookName;
         this.bookISBN = bookISBN;
         this.bookDescription = bookDescription;
@@ -86,6 +88,14 @@ public class Book {
 
     public void setBookPublishedDate(Date bookPublishedDate) {
         this.bookPublishedDate = bookPublishedDate;
+    }
+
+    public String getBookThumbnailURL() {
+        return bookThumbnailURL;
+    }
+
+    public void setBookThumbnailURL(String bookThumbnailURL) {
+        this.bookThumbnailURL = bookThumbnailURL;
     }
 
     public BookCategory getBookCategory() {

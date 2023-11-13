@@ -19,6 +19,9 @@ public class NewBook {
     @Digits(integer = 9, fraction = 0, message = "Book quantity must be a number")
     Integer bookQuantity;
 
+    @NotEmpty(message = "Book thumbnail URL cannot be empty")
+    String bookThumbnailURL;
+
     @NotNull(message = "Book category ID cannot be null")
     String bookCategoryId;
 
@@ -39,6 +42,10 @@ public class NewBook {
 
     public Integer getBookQuantity() {
         return bookQuantity;
+    }
+
+    public String getBookThumbnailURL() {
+        return bookThumbnailURL;
     }
 
     public String getBookCategoryId() {
@@ -63,6 +70,10 @@ public class NewBook {
 
     public void setBookQuantity(Integer bookQuantity) {
         this.bookQuantity = bookQuantity;
+    }
+
+    public void setBookThumbnailURL(String bookThumbnailURL) {
+        this.bookThumbnailURL = bookThumbnailURL;
     }
 
     public void setBookCategoryId(String bookCategoryId) {

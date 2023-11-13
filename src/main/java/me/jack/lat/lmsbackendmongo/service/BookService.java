@@ -63,6 +63,7 @@ public class BookService {
                 newBook.getBookDescription(),
                 newBook.getBookQuantity(),
                 new Date(),
+                newBook.getBookThumbnailURL(),
                 bookCategory,
                 bookAuthor
         );
