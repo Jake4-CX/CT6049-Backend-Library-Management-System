@@ -38,6 +38,8 @@ public class Book {
         this.bookQuantity = bookQuantity;
         this.bookPublishedDate = bookPublishedDate;
 
+        this.bookThumbnailURL = bookThumbnailURL;
+
         this.bookCategory = bookCategory;
         this.bookAuthor = bookAuthor;
     }
