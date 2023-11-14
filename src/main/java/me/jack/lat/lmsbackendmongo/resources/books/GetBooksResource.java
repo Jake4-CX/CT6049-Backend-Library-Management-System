@@ -11,9 +11,7 @@ import me.jack.lat.lmsbackendmongo.service.BookService;
 import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
 import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,12 +83,15 @@ public class GetBooksResource {
         Map<String, Object> response = new HashMap<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
-            String query = "SELECT * FROM books";
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM books WHERE bookId = ?");
+            preparedStatement.setInt(1, 1);
 
-            try (Statement statement = connection.createStatement()) {
-                statement.executeQuery(query);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                // ToDo: use resultSet.
+
             } catch (SQLException e) {
                 logger.warning("SQL Exception2: " + e.getMessage());
+
             }
 
         } catch (SQLException e) {
