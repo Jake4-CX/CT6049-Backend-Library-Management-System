@@ -6,6 +6,7 @@ import dev.morphia.query.FindOptions;
 import dev.morphia.query.filters.Filters;
 import me.jack.lat.lmsbackendmongo.entities.*;
 import me.jack.lat.lmsbackendmongo.model.NewBook;
+import me.jack.lat.lmsbackendmongo.util.DateUtil;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.types.ObjectId;
 
@@ -62,7 +63,7 @@ public class BookService {
                 newBook.getBookISBN(),
                 newBook.getBookDescription(),
                 newBook.getBookQuantity(),
-                new Date(),
+                DateUtil.convertStringToDate(newBook.getBookPublishedDate()),
                 newBook.getBookThumbnailURL(),
                 bookCategory,
                 bookAuthor

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.Date;
+
 public class NewBook {
 
     @NotNull(message = "Book name cannot be null")
@@ -21,6 +23,9 @@ public class NewBook {
 
     @NotEmpty(message = "Book thumbnail URL cannot be empty")
     String bookThumbnailURL;
+
+    @NotEmpty(message = "Book published date cannot be empty")
+    String bookPublishedDate;
 
     @NotNull(message = "Book category ID cannot be null")
     String bookCategoryId;
@@ -82,5 +87,13 @@ public class NewBook {
 
     public void setBookAuthorId(String bookAuthorId) {
         this.bookAuthorId = bookAuthorId;
+    }
+
+    public String getBookPublishedDate() {
+        return bookPublishedDate;
+    }
+
+    public void setBookPublishedDate(String bookPublishedDate) {
+        this.bookPublishedDate = bookPublishedDate;
     }
 }
