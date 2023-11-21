@@ -19,6 +19,7 @@ public class OracleDBUtil {
 
 
     static {
+
         BasicDataSource ds = new BasicDataSource();
 
         ds.setUrl(ORACLE_URL);
