@@ -7,8 +7,8 @@ import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.BookService;
-import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.BookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
 import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 
 import java.sql.*;

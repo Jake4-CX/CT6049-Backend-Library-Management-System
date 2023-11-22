@@ -8,7 +8,7 @@ import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.model.NewBookCategory;
-import me.jack.lat.lmsbackendmongo.service.CategoryService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.CategoryService;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -10,7 +10,7 @@ import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
 import org.bson.types.ObjectId;
 
 import java.util.Date;

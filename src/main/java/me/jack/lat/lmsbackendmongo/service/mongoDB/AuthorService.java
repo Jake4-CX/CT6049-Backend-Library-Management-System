@@ -1,4 +1,4 @@
-package me.jack.lat.lmsbackendmongo.service;
+package me.jack.lat.lmsbackendmongo.service.mongoDB;
 
 import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;

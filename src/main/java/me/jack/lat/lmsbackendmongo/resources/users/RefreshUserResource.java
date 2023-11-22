@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.UserService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,10 +69,19 @@ public class RefreshUserResource {
     }
 
     public Response refreshUserSQL(RefreshToken refreshToken) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        me.jack.lat.lmsbackendmongo.service.oracleDB.UserService userService = new me.jack.lat.lmsbackendmongo.service.oracleDB.UserService();
+        HashMap<String, Object> returnEntity = userService.refreshUser(refreshToken.getRefreshToken());
+
+        if (returnEntity != null) {
+            return Response.status(Response.Status.OK).entity(returnEntity).type(MediaType.APPLICATION_JSON).build();
+        } else {
+            HashMap<String, String> error = new HashMap<>();
+            error.put("message", "Invalid refresh token.");
+            error.put("refreshToken", refreshToken.getRefreshToken());
+            error.put("type", "401");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(error).type(MediaType.APPLICATION_JSON).build();
+        }
 
     }
 }

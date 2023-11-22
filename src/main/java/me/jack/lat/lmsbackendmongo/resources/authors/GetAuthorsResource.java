@@ -6,7 +6,7 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.BookAuthor;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.AuthorService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.AuthorService;
 
 import java.util.HashMap;
 import java.util.List;

@@ -7,7 +7,7 @@ import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookCategory;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.CategoryService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.CategoryService;
 import org.bson.types.ObjectId;
 
 import java.util.HashMap;

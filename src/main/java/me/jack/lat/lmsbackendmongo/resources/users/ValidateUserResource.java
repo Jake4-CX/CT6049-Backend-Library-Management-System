@@ -6,7 +6,7 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.UserService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,8 +63,20 @@ public class ValidateUserResource {
 
     public Response validateUserSQL(String authorizationToken) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        me.jack.lat.lmsbackendmongo.service.oracleDB.UserService userService = new me.jack.lat.lmsbackendmongo.service.oracleDB.UserService();
+        HashMap<String, Object> returnEntity = userService.validateAccessToken(authorizationToken);
+
+        if (returnEntity != null) {
+            response.put("message", "User validated.");
+            response.put("data", returnEntity);
+
+            return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+
+        } else {
+            response.put("message", "Invalid access token.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
     }
 }

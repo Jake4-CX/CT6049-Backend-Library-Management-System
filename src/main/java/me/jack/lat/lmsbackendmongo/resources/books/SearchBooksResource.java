@@ -6,7 +6,7 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.BookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.BookService;
 
 import java.util.HashMap;
 import java.util.List;

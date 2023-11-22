@@ -1,4 +1,4 @@
-package me.jack.lat.lmsbackendmongo.service;
+package me.jack.lat.lmsbackendmongo.service.mongoDB;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import dev.morphia.Datastore;

@@ -12,8 +12,8 @@ import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
-import me.jack.lat.lmsbackendmongo.service.UserService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
 
 import java.util.HashMap;
 import java.util.List;

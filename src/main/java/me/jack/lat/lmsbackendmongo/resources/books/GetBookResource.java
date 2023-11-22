@@ -8,9 +8,9 @@ import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.BookService;
-import me.jack.lat.lmsbackendmongo.service.LoanedBookService;
-import me.jack.lat.lmsbackendmongo.service.UserService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.BookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
 import org.bson.types.ObjectId;
 
 import java.util.HashMap;
