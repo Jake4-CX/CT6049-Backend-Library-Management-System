@@ -51,8 +51,16 @@ public class CreateAuthorResource {
 
     public Response createBookAuthorSQL(NewBookAuthor newBookAuthor) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+        me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService authorService = new me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService();
+        Error authorCreated = authorService.createAuthor(newBookAuthor);
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        if (authorCreated == null) {
+            response.put("message", "success");
+            return Response.status(Response.Status.CREATED).entity(response).type(MediaType.APPLICATION_JSON).build();
+        } else {
+            response.put("message", authorCreated.getMessage());
+            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
     }
 }

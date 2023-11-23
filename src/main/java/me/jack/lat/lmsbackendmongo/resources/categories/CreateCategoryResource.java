@@ -51,8 +51,17 @@ public class CreateCategoryResource {
 
     public Response createBookCategorySQL(NewBookCategory newBookCategory) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService categoryService = new me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService();
+        Error categoryCreated = categoryService.createCategory(newBookCategory);
+
+        if (categoryCreated == null) {
+            response.put("message", "success");
+            return Response.status(Response.Status.CREATED).entity(response).type(MediaType.APPLICATION_JSON).build();
+        } else {
+            response.put("message", "Category with the same name already exists.");
+            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
     }
 }

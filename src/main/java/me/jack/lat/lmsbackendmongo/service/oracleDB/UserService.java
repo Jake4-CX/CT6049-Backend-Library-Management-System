@@ -117,7 +117,7 @@ public class UserService {
 
     public void assignUserRefreshToken(Integer userId, String refreshToken) {
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO REFRESHTOKENS (refreshToken, userId, EXPIRATIONDATE) VALUES (?, ?, ?)");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO REFRESHTOKENS (refreshToken, userId, expirationDate) VALUES (?, ?, ?)");
             preparedStatement.setString(1, refreshToken);
             preparedStatement.setInt(2, userId);
             preparedStatement.setDate(3, new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME));
@@ -150,7 +150,6 @@ public class UserService {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                logger.info("User found, email: " + resultSet.getString("userEmail") + " password: " + resultSet.getString("userPassword"));
 
                 return new HashMap<>(){{
                     put("userId", userId);
