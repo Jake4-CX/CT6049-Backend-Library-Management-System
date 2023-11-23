@@ -180,7 +180,7 @@ public class UserService {
                 return null;
             }
 
-            if (!Objects.equals(user.get("userId"), userId)) {
+            if ((user.get("userId") != Integer.valueOf(userId))) {
                 // User ID in token does not match user ID in database
                 return null;
             }
@@ -193,11 +193,8 @@ public class UserService {
             unassignUserRefreshToken(Integer.valueOf(userId), refreshToken);
 
             return new HashMap<>(){{
-                put("user", user);
-                put("token", new HashMap<>(){{
-                    put("accessToken", newAccessToken);
-                    put("refreshToken", newRefreshToken);
-                }});
+                put("accessToken", newAccessToken);
+                put("refreshToken", newRefreshToken);
             }};
 
         } catch (Exception e) {
