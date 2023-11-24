@@ -48,8 +48,11 @@ public class SearchBooksResource {
 
     public Response searchBooksSQL(String bookName) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
-        response.put("books", new List[] {});
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.BookService bookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.BookService();
+        HashMap<String, Object>[] bookResults = bookService.searchBooks(bookName);
+
+        response.put("books", bookResults);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
