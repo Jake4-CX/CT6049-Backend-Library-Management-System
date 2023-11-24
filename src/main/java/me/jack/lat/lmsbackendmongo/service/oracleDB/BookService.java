@@ -137,4 +137,124 @@ public class BookService {
         return books.toArray(new HashMap[0]);
 
     }
+
+    public HashMap<String, Object> getBookFromId(Integer bookId) {
+
+        logger.info("Getting book from id: " + bookId);
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            logger.info("Connection established");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT b.*, "
+                    + "a.authorFirstName, a.authorLastName, "
+                    + "c.categoryName, c.categoryDescription, "
+                    + " (SELECT COUNT(*) FROM loanedBooks l WHERE l.bookId = b.id AND l.returnedAt IS NULL) AS loanedQuantity "
+                    + " FROM BOOKS b "
+                    + " INNER JOIN bookAuthors a ON b.bookAuthorId = a.ID "
+                    + " INNER JOIN bookCategories c ON b.bookCategoryId = c.ID "
+                    + " WHERE b.ID = ?");
+
+            preparedStatement.setInt(1, bookId);
+
+            logger.info("Prepared statement created");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                logger.info("Executed query");
+                if (resultSet.next()) {
+                    logger.info("Result set has next");
+                    return new HashMap<>(){{
+                        put("book", new HashMap<>(){{
+                            put("bookId", resultSet.getInt("id"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthorId", resultSet.getInt("bookAuthorId"));
+                            put("bookCategory", new HashMap<>(){{
+                                put("bookCategoryId", resultSet.getInt("bookCategoryId"));
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                            put("bookAuthor", new HashMap<>(){{
+                                put("bookAuthorId", resultSet.getInt("bookAuthorId"));
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                        }});
+                        put("booksLoaned", resultSet.getInt("loanedQuantity"));
+                    }};
+                }
+            }
+        } catch (Exception e) {
+            logger.warning("Failed getting book from id: " + e.getMessage());
+            return null;
+        }
+
+        return null;
+    }
+
+    public HashMap<String, Object> getBookFromId(Integer bookId, Integer userId) {
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT b.*, "
+                    + " a.authorFirstName, a.authorLastName, "
+                    + " c.categoryName, c.categoryDescription, "
+                    + " lb.id AS loanedBookId, lb.loanedAt, lb.returnedAt, "
+                    + " (SELECT COUNT(*) FROM loanedBooks l WHERE l.bookId = b.id AND l.returnedAt IS NULL) AS loanedQuantity "
+                    + " FROM BOOKS b "
+                    + " INNER JOIN bookAuthors a ON b.bookAuthorId = a.ID "
+                    + " INNER JOIN bookCategories c ON b.bookCategoryId = c.ID "
+                    + " LEFT JOIN loanedBooks lb on lb.userId = ? AND lb.bookId = b.id AND lb.returnedAt IS NULL "
+                    + " WHERE b.ID = ?");
+            // No need for loanFine, as this will only exist if returnedAt is not NULL
+
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, bookId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    HashMap<String, Object> book = new HashMap<>() {{
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("id"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthorId", resultSet.getInt("bookAuthorId"));
+                            put("bookCategory", new HashMap<>() {{
+                                put("bookCategoryId", resultSet.getInt("bookCategoryId"));
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                            put("bookAuthor", new HashMap<>() {{
+                                put("bookAuthorId", resultSet.getInt("bookAuthorId"));
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                        }});
+                        put("booksLoaned", resultSet.getInt("loanedQuantity"));
+
+                        if (resultSet.getObject("loanedBookId") != null) {
+                            put("loanedBook", new HashMap<>() {{
+                                put("loanedBookId", resultSet.getInt("loanedBookId"));
+                                put("loanedAt", resultSet.getDate("loanedAt"));
+                                put("returnedAt", resultSet.getDate("returnedAt"));
+                            }});
+                        }
+                    }};
+
+                    return book;
+                }
+            }
+        } catch (Exception e) {
+            logger.warning("Failed getting book from id: " + e.getMessage());
+            return null;
+        }
+
+        return null;
+    }
 }

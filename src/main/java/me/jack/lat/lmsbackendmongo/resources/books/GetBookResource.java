@@ -25,18 +25,6 @@ public class GetBookResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBook(@HeaderParam("Database-Type") String databaseType, @PathParam("bookId") String bookId, @HeaderParam("Authorization") String authorizationHeader) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            new ObjectId(bookId);
-
-        } catch (Exception e) {
-            // BookId is not a valid ObjectId (24 character hex string). Return 404.
-
-            response.put("message", "No Book found with this id");
-            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
-        }
-
         if (databaseType == null || databaseType.isEmpty()) {
             databaseType = DatabaseTypeEnum.MONGODB.toString();
         }
@@ -51,6 +39,16 @@ public class GetBookResource {
 
     public Response getBookMongoDB(String bookId, String authorizationHeader) {
         Map<String, Object> response = new HashMap<>();
+
+        try {
+            new ObjectId(bookId);
+
+        } catch (Exception e) {
+            // BookId is not a valid ObjectId (24 character hex string). Return 404.
+
+            response.put("message", "Invalid Book id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         BookService bookService = new BookService();
         Book selectedBook = bookService.getBookFromId(bookId);
@@ -92,8 +90,63 @@ public class GetBookResource {
 
     public Response getBookSQL(String bookId, String authorizationHeader) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        try {
+            Integer.valueOf(bookId);
+        } catch (NumberFormatException e) {
+            response.put("message", "Invalid Book id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.BookService bookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.BookService();
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String authorizationToken = authorizationHeader.substring("Bearer".length()).trim();
+            me.jack.lat.lmsbackendmongo.service.oracleDB.UserService userService = new me.jack.lat.lmsbackendmongo.service.oracleDB.UserService();
+            HashMap<String, Object> userEntity = userService.validateAccessToken(authorizationToken);
+
+            if (userEntity == null) {
+                response.put("message", "Invalid access token.");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(response).type(MediaType.APPLICATION_JSON).build();
+
+            } else {
+
+                try {
+                    HashMap <String, Object> book = bookService.getBookFromId(Integer.valueOf(bookId), (Integer) userEntity.get("userId"));
+
+                    if (book != null) {
+                        return Response.status(Response.Status.OK).entity(book).type(MediaType.APPLICATION_JSON).build();
+                    } else {
+                        response.put("message", "No Book found with this id");
+                        return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+                    }
+
+                } catch (NumberFormatException e) {
+
+                    response.put("message", "No Book found with this id");
+                    return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+                }
+            }
+
+        } else {
+
+            try {
+                HashMap<String, Object> book = bookService.getBookFromId(Integer.valueOf(bookId));
+
+                if (book != null) {
+                    return Response.status(Response.Status.OK).entity(book).type(MediaType.APPLICATION_JSON).build();
+                } else {
+                    response.put("message", "No Book found with this id");
+                    return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+                }
+
+            } catch (NumberFormatException e) {
+
+                response.put("message", "No Book found with this id");
+                return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+            }
+
+        }
+
     }
 }
