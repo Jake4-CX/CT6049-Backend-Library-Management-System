@@ -21,15 +21,6 @@ public class GetBooksFromAuthorResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBooksFromAuthor(@HeaderParam("Database-Type") String databaseType, @PathParam("authorId") String authorId) {
 
-        try {
-            new ObjectId(authorId);
-
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "No Author found with this id");
-            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
-        }
-
         if (databaseType == null || databaseType.isEmpty()) {
             databaseType = DatabaseTypeEnum.MONGODB.toString();
         }
@@ -44,6 +35,14 @@ public class GetBooksFromAuthorResource {
 
     public Response getBooksFromAuthorMongoDB(String authorId) {
         Map<String, Object> response = new HashMap<>();
+
+        try {
+            new ObjectId(authorId);
+
+        } catch (IllegalArgumentException e) {
+            response.put("message", "Invalid Author id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         AuthorService authorService = new AuthorService();
         BookAuthor selectedAuthor = authorService.getAuthorFromId(authorId);
@@ -62,7 +61,24 @@ public class GetBooksFromAuthorResource {
 
     public Response getBooksFromAuthorSQL(String authorId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+
+        try {
+            Integer.valueOf(authorId);
+        } catch (NumberFormatException e) {
+            response.put("message", "Invalid Author id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService authorService = new me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService();
+
+        if (authorService.getAuthorFromId(Integer.parseInt(authorId)) == null) {
+            response.put("message", "No Author found with this id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        HashMap<String, Object>[] authorBooks = authorService.getBooksFromAuthor(Integer.parseInt(authorId));
+
+        response.put("books", authorBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
