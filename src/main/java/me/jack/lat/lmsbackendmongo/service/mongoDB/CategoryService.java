@@ -27,9 +27,9 @@ public class CategoryService {
         return query.first();
     }
 
-    public Book[] getBooksFromCategory(BookCategory category) {
+    public List<Book> getBooksFromCategory(BookCategory category) {
         Query<Book> query = datastore.find(Book.class).filter("bookCategory", category);
-        return query.iterator().toList().toArray(new Book[0]);
+        return query.iterator().toList();
     }
 
     public boolean createCategory(NewBookCategory newBookCategory) {

@@ -28,9 +28,9 @@ public class AuthorService {
         return query.first();
     }
 
-    public Book[] getBooksFromAuthor(BookAuthor author) {
+    public List<Book> getBooksFromAuthor(BookAuthor author) {
         Query<Book> query = datastore.find(Book.class).filter("bookAuthor", author);
-        return query.iterator().toList().toArray(new Book[0]);
+        return query.iterator().toList();
     }
 
     public boolean createAuthor(NewBookAuthor newAuthor) {

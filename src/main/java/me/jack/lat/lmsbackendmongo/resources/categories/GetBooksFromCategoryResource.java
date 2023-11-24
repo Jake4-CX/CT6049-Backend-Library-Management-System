@@ -6,11 +6,15 @@ import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.UnprotectedRoute;
 import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.BookCategory;
+import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.mongoDB.CategoryService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
 import org.bson.types.ObjectId;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Path("/categories/{categoryId}/books")
@@ -45,6 +49,8 @@ public class GetBooksFromCategoryResource {
         }
 
         CategoryService categoryService = new CategoryService();
+        LoanedBookService loanedBookService = new LoanedBookService();
+
         BookCategory selectedCategory = categoryService.getCategoryFromId(categoryId);
 
         if (selectedCategory == null) {
@@ -52,9 +58,19 @@ public class GetBooksFromCategoryResource {
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
-        Book[] categoryBooks = categoryService.getBooksFromCategory(selectedCategory);
+        List<Book> categoryBooks = categoryService.getBooksFromCategory(selectedCategory);
+        List<Object> booksObject = new ArrayList<>();
 
-        response.put("books", categoryBooks);
+        categoryBooks.forEach((book) -> {
+            List<LoanedBook> loanedBooks = loanedBookService.getUnreturnedBooksWithBook(book);
+            Map<String, Object> bookObject = new HashMap<>();
+            bookObject.put("book", book);
+            bookObject.put("booksLoaned", loanedBooks.size());
+
+            booksObject.add(bookObject);
+        });
+
+        response.put("books", booksObject);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
