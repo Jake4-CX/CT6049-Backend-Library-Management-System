@@ -21,15 +21,6 @@ public class GetBooksFromCategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBooksFromCategory(@HeaderParam("Database-Type") String databaseType, @PathParam("categoryId") String categoryId) {
 
-        try {
-            new ObjectId(categoryId);
-
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "No Category found with this id");
-            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
-        }
-
         if (databaseType == null || databaseType.isEmpty()) {
             databaseType = DatabaseTypeEnum.MONGODB.toString();
         }
@@ -44,6 +35,14 @@ public class GetBooksFromCategoryResource {
 
     public Response getBooksFromCategoryMongoDB(String categoryId) {
         Map<String, Object> response = new HashMap<>();
+
+        try {
+            new ObjectId(categoryId);
+
+        } catch (IllegalArgumentException e) {
+            response.put("message", "Invalid Category id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         CategoryService categoryService = new CategoryService();
         BookCategory selectedCategory = categoryService.getCategoryFromId(categoryId);
@@ -62,7 +61,24 @@ public class GetBooksFromCategoryResource {
 
     public Response getBooksFromCategorySQL(String categoryId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+
+        try {
+            Integer.valueOf(categoryId);
+        } catch (NumberFormatException e) {
+            response.put("message", "Invalid Category id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService categoryService = new me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService();
+
+        if (categoryService.getCategoryFromId(Integer.valueOf(categoryId)) == null) {
+            response.put("message", "No Category found with this id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        HashMap<String, Object>[] categoryBooks = categoryService.getBooksFromCategory(Integer.valueOf(categoryId));
+
+        response.put("books", categoryBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
