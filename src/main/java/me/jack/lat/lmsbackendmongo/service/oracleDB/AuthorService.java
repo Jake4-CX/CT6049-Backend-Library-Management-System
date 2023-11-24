@@ -6,6 +6,7 @@ import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -79,5 +80,29 @@ public class AuthorService {
             return true;
         }
 
+    }
+
+    public HashMap<String, Object>[] getAuthors() {
+        ArrayList<HashMap<String, Object>> authors = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKAUTHORS ORDER BY id");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    HashMap<String, Object> author = new HashMap<>();
+                    author.put("bookAuthorId", resultSet.getInt("id"));
+                    author.put("authorFirstName", resultSet.getString("authorFirstName"));
+                    author.put("authorLastName", resultSet.getString("authorLastName"));
+                    authors.add(author);
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting authors: " + e.getMessage());
+            return null;
+        }
+
+        return authors.toArray(new HashMap[0]);
     }
 }

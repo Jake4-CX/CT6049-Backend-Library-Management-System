@@ -82,25 +82,18 @@ public class GetBooksResource {
     public Response getBooksSQL(String sort, String filter, Integer page, Integer limit) {
         Map<String, Object> response = new HashMap<>();
 
-        try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM books WHERE bookId = ?");
-            preparedStatement.setInt(1, 1);
+        me.jack.lat.lmsbackendmongo.service.oracleDB.BookService bookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.BookService();
+        HashMap<String, Object>[] books = bookService.getBooks(sort, filter, page, limit);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                // ToDo: use resultSet.
+        response.put("books", books);
 
-            } catch (SQLException e) {
-                logger.warning("SQL Exception2: " + e.getMessage());
+        response.put("settings", new HashMap<String, Object>() {{
+            put("sort", sort);
+            put("filter", filter);
+            put("page", page);
+            put("limit", limit);
+        }});
 
-            }
-
-        } catch (SQLException e) {
-            logger.warning("SQL Exception: " + e.getMessage());
-        }
-
-        response.put("message", "Not implemented yet - SQL");
-        response.put("books", new List[]{});
-
-        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 }

@@ -34,7 +34,7 @@ public class GetAuthorsResource {
         }
 
         if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-            return getAuthorsSQL(sort, filter, page, limit);
+            return getAuthorsSQL();
         } else {
             return getAuthorsMongoDB(sort, filter, page, limit);
         }
@@ -56,12 +56,16 @@ public class GetAuthorsResource {
             put("limit", limit);
         }});
 
-        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 
-    public Response getAuthorsSQL(String sort, String filter, Integer page, Integer limit) {
+    public Response getAuthorsSQL() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService authorService = new me.jack.lat.lmsbackendmongo.service.oracleDB.AuthorService();
+        HashMap<String, Object>[] bookAuthors = authorService.getAuthors();
+
+        response.put("authors", bookAuthors);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }

@@ -6,6 +6,7 @@ import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -77,4 +78,31 @@ public class CategoryService {
             return true;
         }
     }
+
+    public HashMap<String, Object>[] getCategories() {
+        ArrayList<HashMap<String, Object>> categories = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKCATEGORIES ORDER BY id");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    HashMap<String, Object> category = new HashMap<>();
+                    category.put("bookCategoryId", resultSet.getInt("id"));
+                    category.put("categoryName", resultSet.getString("categoryName"));
+                    category.put("categoryDescription", resultSet.getString("categoryDescription"));
+                    categories.add(category);
+                }
+            }
+
+
+        } catch (Exception e) {
+            logger.warning("Failed getting categories: " + e.getMessage());
+            return null;
+        }
+
+        return categories.toArray(new HashMap[0]);
+
+    }
+
 }

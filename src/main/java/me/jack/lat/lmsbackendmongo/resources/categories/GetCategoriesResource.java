@@ -34,7 +34,7 @@ public class GetCategoriesResource {
         }
 
         if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-            return getCategoriesSQL(sort, filter, page, limit);
+            return getCategoriesSQL();
         } else {
             return getCategoriesMongoDB(sort, filter, page, limit);
         }
@@ -49,24 +49,24 @@ public class GetCategoriesResource {
 
         response.put("categories", bookCategories);
 
-        final String finalSort = sort;
-        final String finalFilter = filter;
-        final int finalPage = page;
-        final int finalLimit = limit;
-
         response.put("settings", new HashMap<String, Object>() {{
-            put("sort", finalSort);
-            put("filter", finalFilter);
-            put("page", finalPage);
-            put("limit", finalLimit);
+            put("sort", sort);
+            put("filter", filter);
+            put("page", page);
+            put("limit", limit);
         }});
 
-        return Response.ok(response).build();
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 
-    public Response getCategoriesSQL(String sort, String filter, Integer page, Integer limit) {
+    public Response getCategoriesSQL() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService categoryService = new me.jack.lat.lmsbackendmongo.service.oracleDB.CategoryService();
+        HashMap<String, Object>[] categories = categoryService.getCategories();
+
+        response.put("categories", categories);
+
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
