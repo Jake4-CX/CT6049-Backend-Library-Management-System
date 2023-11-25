@@ -28,15 +28,6 @@ public class PayFineBookLoanResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response payFineBookLoan(@HeaderParam("Database-Type") String databaseType, @PathParam("loanId") String loanId, @Context ContainerRequestContext requestContext) {
 
-        try {
-            new ObjectId(loanId);
-
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "No LoanBook found with this id");
-            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
-        }
-
         String userId = (String) requestContext.getProperty("userId");
 
         if (databaseType == null || databaseType.isEmpty()) {
@@ -52,6 +43,14 @@ public class PayFineBookLoanResource {
 
     public Response payFineBookLoanMongoDB(String loanId, String userId) {
         Map<String, Object> response = new HashMap<>();
+
+        try {
+            new ObjectId(loanId);
+
+        } catch (Exception e) {
+            response.put("message", "No LoanBook found with this id");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         LoanedBookService loanedBookService = new LoanedBookService();
         LoanedBook loanedBook = loanedBookService.getLoanedBookFromId(loanId);
@@ -80,8 +79,6 @@ public class PayFineBookLoanResource {
             return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
-        // ToDo: implement fine payment? - Perhaps not needed, but could create a new fine payment entity.
-
         loanedBook.setReturnedAt(new Date());
         loanedBook.setFinePaid(new LoanedBook.FinePaid(Double.parseDouble(dotenv.get("LATE_FINE_PER_DAY")) * loanedBookService.getDaysOverdue(loanedBook)));
 
@@ -99,8 +96,54 @@ public class PayFineBookLoanResource {
 
     public Response payFineBookLoanSQL(String loanId, String userId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService loanedBookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService();
+        HashMap<String, Object> loanedBook = loanedBookService.getLoanedBookFromId(Integer.valueOf(loanId));
+
+        if (loanedBook == null) {
+            response.put("error", new HashMap<>(){{
+                put("message", "No LoanBook found with this id");
+                put("type", 404);
+            }});
+            return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        if (((int) loanedBook.get("userId") != Integer.parseInt(userId))) {
+            response.put("error", new HashMap<>(){{
+                put("message", "LoanBook does not belong to this user");
+                put("type", 403);
+            }});
+            return Response.status(Response.Status.FORBIDDEN).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        if (loanedBook.get("returnedAt") != null) {
+            response.put("error", new HashMap<>(){{
+                put("message", "LoanBook already returned");
+                put("type", 409);
+            }});
+            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        if (!(loanedBookService.isOverdue(loanedBook))) {
+            response.put("error", new HashMap<>(){{
+                put("message", "LoanBook is not overdue");
+                put("type", 409);
+            }});
+            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
+        Error error = loanedBookService.returnAndPayFine(Integer.valueOf(loanId), Integer.valueOf(userId));
+
+        if (error != null) {
+            response.put("error", new HashMap<>(){{
+                put("message", error.getMessage());
+                put("type", 400);
+            }});
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
+        } else {
+            response.put("message", "success");
+            return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
     }
 }

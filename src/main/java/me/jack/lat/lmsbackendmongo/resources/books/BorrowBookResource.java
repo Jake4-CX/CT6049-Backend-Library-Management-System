@@ -62,9 +62,33 @@ public class BorrowBookResource {
 
     public Response borrowBookSQL(String bookId, String userId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
 
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        me.jack.lat.lmsbackendmongo.service.oracleDB.BookService bookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.BookService();
+
+        try {
+            Error error = bookService.borrowBook(Integer.valueOf(bookId), Integer.valueOf(userId));
+
+            if (error == null) {
+                // Book was successfully borrowed.
+                response.put("message", "success");
+                return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+            } else {
+                // Book was not successfully borrowed.
+                response.put("error", new HashMap<>(){{
+                    put("message", error.getMessage());
+                    put("type", 400);
+                }});
+                return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
+            }
+
+        } catch (NumberFormatException e) {
+            response.put("error", new HashMap<>(){{
+                put("message", "Invalid bookId");
+                put("type", 400);
+            }});
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
+
     }
 
 }

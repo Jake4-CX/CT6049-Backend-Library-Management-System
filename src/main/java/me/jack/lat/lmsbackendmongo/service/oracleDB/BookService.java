@@ -6,6 +6,7 @@ import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -309,5 +310,49 @@ public class BookService {
             }
 
         return books.toArray(new HashMap[0]);
+    }
+
+    public Error borrowBook(Integer bookId, Integer userId) {
+        HashMap<String, Object> requestedBook = getBookFromId(bookId);
+
+        if (requestedBook == null) {
+            // A Book does not exist with this Id
+            return new Error("Book does not exist with this Id.");
+        }
+
+        LoanedBookService loanedBookService = new LoanedBookService();
+        HashMap<String, Object>[] loanedBooks = loanedBookService.getUnreturnedBooks(bookId);
+
+        if (loanedBooks.length >= (Integer) ((HashMap<?, ?>) requestedBook.get("book")).get("bookQuantity")) {
+            // All books borrowed. Deny user's request
+            return new Error("All books borrowed.");
+        }
+
+        if (Arrays.stream(loanedBooks).anyMatch(loanedBook -> loanedBook.get("userId").equals(userId))) {
+            // User has already borrowed this book. Deny user's request
+            return new Error("User has already borrowed this book.");
+        }
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO loanedBooks (userId, bookId, loanedAt) VALUES (?, ?, ?)");
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, bookId);
+            preparedStatement.setDate(3, new Date(System.currentTimeMillis()));
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed borrowing book");
+            }
+
+        } catch (SQLException e) {
+            logger.warning("SQL Error: " + e.getMessage());
+            return new Error("Failed borrowing book: " + e.getMessage());
+        } catch (Exception e) {
+            logger.warning("General Error: " + e.getMessage());
+            return new Error("Failed borrowing book: " + e.getMessage());
+        }
     }
 }
