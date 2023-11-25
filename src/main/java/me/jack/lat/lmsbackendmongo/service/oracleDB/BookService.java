@@ -111,7 +111,6 @@ public class BookService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
-                            put("bookAuthorId", resultSet.getInt("bookAuthorId"));
                             put("bookCategory", new HashMap<>(){{
                                 put("bookCategoryId", resultSet.getInt("bookCategoryId"));
                                 put("categoryName", resultSet.getString("categoryName"));
@@ -171,7 +170,6 @@ public class BookService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
-                            put("bookAuthorId", resultSet.getInt("bookAuthorId"));
                             put("bookCategory", new HashMap<>(){{
                                 put("bookCategoryId", resultSet.getInt("bookCategoryId"));
                                 put("categoryName", resultSet.getString("categoryName"));
@@ -225,7 +223,6 @@ public class BookService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
-                            put("bookAuthorId", resultSet.getInt("bookAuthorId"));
                             put("bookCategory", new HashMap<>() {{
                                 put("bookCategoryId", resultSet.getInt("bookCategoryId"));
                                 put("categoryName", resultSet.getString("categoryName"));
@@ -285,7 +282,6 @@ public class BookService {
                                 put("bookQuantity", resultSet.getInt("bookQuantity"));
                                 put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                                 put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
-                                put("bookAuthorId", resultSet.getInt("bookAuthorId"));
                                 put("bookCategory", new HashMap<>(){{
                                     put("bookCategoryId", resultSet.getInt("bookCategoryId"));
                                     put("categoryName", resultSet.getString("categoryName"));
