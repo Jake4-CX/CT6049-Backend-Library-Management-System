@@ -64,8 +64,11 @@ public class GetAllUserBooksLoans {
 
     public Response getAllUserBookLoansSQL(String userId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
-        response.put("loanedBooks", new List[]{});
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService loanedBookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService();
+        HashMap<String, Object>[] loanedBooks = loanedBookService.getLoanedBooksForUser(Integer.valueOf(userId));
+
+        response.put("loanedBooks", loanedBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }

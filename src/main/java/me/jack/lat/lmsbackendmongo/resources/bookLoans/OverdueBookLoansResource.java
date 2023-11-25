@@ -55,8 +55,11 @@ public class OverdueBookLoansResource {
 
     public Response getOverdueBookLoansSQL() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
-        response.put("overdueBooks", new List[] {});
+
+        me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService loanedBookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService();
+        HashMap<String, Object>[] overdueBooks = loanedBookService.findAllOverdueBooks();
+
+        response.put("overdueBooks", overdueBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
