@@ -64,8 +64,10 @@ public class GetBorrowedUserBookLoansResource {
 
     public Response getBorrowedUserBookLoansSQL(String userId) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
-        response.put("borrowedBooks", new List[]{});
+        me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService loanedBookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService();
+        HashMap<String, Object>[] loanedBooks = loanedBookService.findCurrentBorrowedBooksForUser(Integer.valueOf(userId));
+
+        response.put("borrowedBooks", loanedBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }

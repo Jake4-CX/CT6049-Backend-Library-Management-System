@@ -55,7 +55,10 @@ public class BorrowedBookLoansResource {
 
     public Response getBorrowedBookLoansSQL() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Not implemented yet - SQL");
+        me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService loanedBookService = new me.jack.lat.lmsbackendmongo.service.oracleDB.LoanedBookService();
+        HashMap<String, Object>[] borrowedBooks = loanedBookService.findAllBorrowedBooks();
+
+        response.put("borrowedBooks", borrowedBooks);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }

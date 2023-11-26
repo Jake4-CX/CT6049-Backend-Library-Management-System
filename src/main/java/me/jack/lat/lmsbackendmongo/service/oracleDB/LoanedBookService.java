@@ -212,14 +212,12 @@ public class LoanedBookService {
                     + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
                     + " ba.authorFirstName, ba.authorLastName, "
                     + " bc.categoryName, bc.categoryDescription, "
-                    + " u.userEmail, u.userRole, u.userCreatedDate, u.userUpdatedDate, "
-                    + " lf.id AS loanFineId, lf.amountPaid, lf.paidAt "
+                    + " u.userEmail, u.userRole, u.userCreatedDate, u.userUpdatedDate "
                     + " FROM LOANEDBOOKS lb "
                     + " INNER JOIN books b on lb.bookId = b.id "
                     + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
                     + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " INNER JOIN users u on lb.userId = u.id "
-                    + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE returnedAt IS NULL AND loanedAt < SYSDATE - 14");
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -253,13 +251,6 @@ public class LoanedBookService {
                             put("userUpdatedDate", resultSet.getDate("userUpdatedDate"));
                         }});
 
-                        if (resultSet.getInt("loanFineId") != 0) {
-                            put("finePaid", new HashMap<>() {{
-                                put("loanFineId", resultSet.getInt("loanFineId"));
-                                put("amountPaid", resultSet.getInt("amountPaid"));
-                                put("paidAt", resultSet.getDate("paidAt"));
-                            }});
-                        }
                     }});
                 }
             }
@@ -270,6 +261,276 @@ public class LoanedBookService {
 
         return loanedBooks.toArray(new HashMap[0]);
     }
+
+    public HashMap<String, Object>[] findOverdueBooksForUser(Integer userId) {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " WHERE returnedAt IS NULL AND loanedAt < SYSDATE - 14 AND userId = ?");
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+                    }});
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting overdue books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findHistoricLoanedBooksForUser(Integer userId) {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription, "
+                    + " lf.id AS loanFineId, lf.amountPaid, lf.paidAt "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
+                    + " WHERE returnedAt IS NOT NULL AND userId = ?");
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+
+                        if (resultSet.getInt("loanFineId") != 0) {
+                            put("finePaid", new HashMap<>() {{
+                                put("loanFineId", resultSet.getInt("loanFineId"));
+                                put("amountPaid", resultSet.getInt("amountPaid"));
+                                put("paidAt", resultSet.getDate("paidAt"));
+                            }});
+                        }
+                    }});
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting overdue books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findCurrentBorrowedBooksForUser(Integer userId) {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " WHERE returnedAt IS NULL AND loanedAt < SYSDATE - 14 AND userId = ?");
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+                    }});
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting overdue books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findCurrentLoansForUser(Integer userId) {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " WHERE returnedAt IS NULL AND userId = ?");
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+                    }});
+
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting overdue books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findAllBorrowedBooks() {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription, "
+                    + " u.userEmail, u.userRole, u.userCreatedDate, u.userUpdatedDate "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " INNER JOIN users u on lb.userId = u.id "
+                    + " WHERE returnedAt IS NULL");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>() {{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+                        put("user", new HashMap<>(){{
+                            put("userId", resultSet.getInt("userId"));
+                            put("userEmail", resultSet.getString("userEmail"));
+                            put("userRole", resultSet.getString("userRole"));
+                            put("userCreatedDate", resultSet.getDate("userCreatedDate"));
+                            put("userUpdatedDate", resultSet.getDate("userUpdatedDate"));
+                        }});
+
+                    }});
+                }
+            }
+        } catch (Exception e) {
+            logger.warning("Failed getting overdue books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
 
     public boolean isOverdue(HashMap<String, Object> loanedBook) {
         Date loanedAt = (Date) loanedBook.get("loanedAt");
