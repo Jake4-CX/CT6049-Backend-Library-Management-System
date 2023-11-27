@@ -10,6 +10,8 @@ import me.jack.lat.lmsbackendmongo.util.DateUtil;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
 import org.bson.types.ObjectId;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -57,21 +59,30 @@ public class BookService {
             return false;
         }
 
-        Book book = new Book(
-                newBook.getBookName(),
-                newBook.getBookISBN(),
-                newBook.getBookDescription(),
-                newBook.getBookQuantity(),
-                DateUtil.convertStringToDate(newBook.getBookPublishedDate()),
-                newBook.getBookThumbnailURL(),
-                bookCategory,
-                bookAuthor
-        );
-
         try {
-            datastore.save(book);
-        } catch (Exception e) {
-            logger.warning("Failed saving book: " + e.getMessage());
+
+            Date bookPublishedDate = DateUtil.convertStringToDate(newBook.getBookPublishedDate());
+
+            Book book = new Book(
+                    newBook.getBookName(),
+                    newBook.getBookISBN(),
+                    newBook.getBookDescription(),
+                    newBook.getBookQuantity(),
+                    bookPublishedDate,
+                    newBook.getBookThumbnailURL(),
+                    bookCategory,
+                    bookAuthor
+            );
+
+            try {
+                datastore.save(book);
+            } catch (Exception e) {
+                logger.warning("Failed saving book: " + e.getMessage());
+                return false;
+            }
+
+        } catch (ParseException e) {
+            logger.warning("Failed converting bookPublishedDate: " + e.getMessage());
             return false;
         }
 

@@ -5,6 +5,7 @@ import me.jack.lat.lmsbackendmongo.util.DateUtil;
 import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 
 import java.sql.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,31 +43,38 @@ public class BookService {
             return new Error("Category not found");
         }
 
-        try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO BOOKS (bookName, bookISBN, bookDescription, bookQuantity, bookThumbnailURL, bookPublishedDate, bookAuthorId, bookCategoryId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            preparedStatement.setString(1, newBook.getBookName());
-            preparedStatement.setString(2, String.valueOf(newBook.getBookISBN()));
-            preparedStatement.setString(3, newBook.getBookDescription());
-            preparedStatement.setInt(4, newBook.getBookQuantity());
-            preparedStatement.setString(5, newBook.getBookThumbnailURL());
-            preparedStatement.setDate(6, new Date(DateUtil.convertStringToDate((newBook.getBookPublishedDate())).getTime()));
-            preparedStatement.setInt(7, Integer.parseInt(newBook.getBookAuthorId()));
-            preparedStatement.setInt(8, Integer.parseInt(newBook.getBookCategoryId()));
+        try {
+            Date bookPublishedDate = new Date(DateUtil.convertStringToDate((newBook.getBookPublishedDate())).getTime());
 
-            int rowsAffected = preparedStatement.executeUpdate();
+            try (Connection connection = OracleDBUtil.getConnection()) {
+                PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO BOOKS (bookName, bookISBN, bookDescription, bookQuantity, bookThumbnailURL, bookPublishedDate, bookAuthorId, bookCategoryId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                preparedStatement.setString(1, newBook.getBookName());
+                preparedStatement.setString(2, String.valueOf(newBook.getBookISBN()));
+                preparedStatement.setString(3, newBook.getBookDescription());
+                preparedStatement.setInt(4, newBook.getBookQuantity());
+                preparedStatement.setString(5, newBook.getBookThumbnailURL());
+                preparedStatement.setDate(6, bookPublishedDate);
+                preparedStatement.setInt(7, Integer.parseInt(newBook.getBookAuthorId()));
+                preparedStatement.setInt(8, Integer.parseInt(newBook.getBookCategoryId()));
 
-            if (rowsAffected == 1) {
-                return null;
-            } else {
-                return new Error("Failed creating new book");
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                if (rowsAffected == 1) {
+                    return null;
+                } else {
+                    return new Error("Failed creating new book");
+                }
+
+            } catch (SQLException e) {
+                logger.warning("SQL Error: " + e.getMessage());
+                return new Error("Failed creating new book: " + e.getMessage());
+            } catch (Exception e) {
+                logger.warning("General Error: " + e.getMessage());
+                return new Error("Failed creating new book: " + e.getMessage());
             }
 
-        } catch (SQLException e) {
-            logger.warning("SQL Error: " + e.getMessage());
-            return new Error("Failed creating new book: " + e.getMessage());
-        } catch (Exception e) {
-            logger.warning("General Error: " + e.getMessage());
-            return new Error("Failed creating new book: " + e.getMessage());
+        } catch (ParseException e) {
+            return new Error("Failed parsing bookPublishedDate: " + e.getMessage());
         }
 
     }
