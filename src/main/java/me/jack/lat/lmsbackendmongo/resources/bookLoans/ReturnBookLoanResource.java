@@ -21,7 +21,7 @@ import java.util.Objects;
 public class ReturnBookLoanResource {
 
     @GET
-    @RestrictedRoles({User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
     public Response returnBookLoan(@HeaderParam("Database-Type") String databaseType, @PathParam("loanId") String loanId, @Context ContainerRequestContext requestContext) {
 

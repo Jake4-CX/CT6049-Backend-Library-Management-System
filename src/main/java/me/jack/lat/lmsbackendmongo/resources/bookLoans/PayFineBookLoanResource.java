@@ -24,7 +24,7 @@ public class PayFineBookLoanResource {
     private static final Dotenv dotenv = Dotenv.configure().load();
 
     @GET
-    @RestrictedRoles({User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
     public Response payFineBookLoan(@HeaderParam("Database-Type") String databaseType, @PathParam("loanId") String loanId, @Context ContainerRequestContext requestContext) {
 
