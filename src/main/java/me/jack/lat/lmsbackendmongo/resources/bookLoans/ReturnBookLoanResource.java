@@ -105,7 +105,7 @@ public class ReturnBookLoanResource {
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
-        if (!Objects.equals(loanedBook.get("userId"), userId)) {
+        if (!Objects.equals(loanedBook.get("userId"), Integer.valueOf(userId))) {
             response.put("error", new HashMap<>(){{
                 put("message", "LoanBook does not belong to this user");
                 put("type", 403);
