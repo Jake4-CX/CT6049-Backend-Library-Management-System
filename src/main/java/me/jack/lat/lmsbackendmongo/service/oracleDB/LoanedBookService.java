@@ -66,7 +66,8 @@ public class LoanedBookService {
     }
 
     public Error returnAndPayFine(Integer loanId, Integer userId) {
-
+        // ToDo: This function may be deprecated (or atleast needs to be edited).
+        // - Replaced with OracleDB Trigger, and should be trigger on regular return
         HashMap<String, Object> loanedBook = getLoanedBookFromId(loanId);
         if (loanedBook == null) {
             return new Error("No loaned book found with this id");
