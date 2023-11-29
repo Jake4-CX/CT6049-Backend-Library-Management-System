@@ -65,49 +65,6 @@ public class LoanedBookService {
         return null;
     }
 
-    public Error returnAndPayFine(Integer loanId, Integer userId) {
-        // ToDo: This function may be deprecated (or atleast needs to be edited).
-        // - Replaced with OracleDB Trigger, and should be trigger on regular return
-        HashMap<String, Object> loanedBook = getLoanedBookFromId(loanId);
-        if (loanedBook == null) {
-            return new Error("No loaned book found with this id");
-        }
-
-        boolean isOverdue = isOverdue(loanedBook);
-
-        try (Connection connection = OracleDBUtil.getConnection()) {
-            connection.setAutoCommit(false);
-
-            PreparedStatement updateStatement = connection.prepareStatement(
-                    "UPDATE LOANEDBOOKS SET returnedAt = SYSDATE WHERE id = ? AND userId = ? AND returnedAt IS NULL");
-            updateStatement.setInt(1, loanId);
-            updateStatement.setInt(2, userId);
-            int rowsAffected = updateStatement.executeUpdate();
-
-            if (rowsAffected == 0) {
-                connection.rollback(); // Rollback if no rows are updated
-                return new Error("No loaned book found with this id");
-            }
-
-            // handle the fine
-            if (isOverdue) {
-                PreparedStatement insertStatement = connection.prepareStatement(
-                        "INSERT INTO LOANFINES (loanId, amountPaid, paidAt) VALUES (?, ?, SYSDATE)");
-                insertStatement.setInt(1, loanId);
-                insertStatement.setInt(2, (int) (Double.parseDouble(dotenv.get("LATE_FINE_PER_DAY")) * getDaysOverdue(loanedBook)));
-                insertStatement.executeUpdate();
-            }
-
-            // Commit transaction
-            connection.commit();
-        } catch (SQLException e) {
-            logger.warning("Failed returning book and handling fine: " + e.getMessage());
-            return new Error("Failed returning book and handling fine");
-        }
-
-        return null;
-    }
-
     public HashMap<String, Object> getLoanedBookFromId(Integer loanId) {
         HashMap<String, Object> loanedBook = new HashMap<>();
 
@@ -144,7 +101,7 @@ public class LoanedBookService {
                     + " ba.authorFirstName, ba.authorLastName, "
                     + " bc.categoryName, bc.categoryDescription, "
                     + " u.userEmail, u.userRole, u.userCreatedDate, u.userUpdatedDate, "
-                    + " lf.id AS loanFineId, lf.amountPaid, lf.paidAt "
+                    + " lf.id AS loanFineId, lf.fineAmount, lf.paidAt "
                     + " FROM LOANEDBOOKS lb "
                     + " INNER JOIN books b on lb.bookId = b.id "
                     + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
@@ -186,9 +143,9 @@ public class LoanedBookService {
                         }});
 
                         if (resultSet.getInt("loanFineId") != 0) {
-                            put("finePaid", new HashMap<>() {{
+                            put("loanFine", new HashMap<>() {{
                                 put("loanFineId", resultSet.getInt("loanFineId"));
-                                put("amountPaid", resultSet.getInt("amountPaid"));
+                                put("fineAmount", resultSet.getInt("fineAmount"));
                                 put("paidAt", resultSet.getDate("paidAt"));
                             }});
                         }
@@ -321,7 +278,7 @@ public class LoanedBookService {
                     + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
                     + " ba.authorFirstName, ba.authorLastName, "
                     + " bc.categoryName, bc.categoryDescription, "
-                    + " lf.id AS loanFineId, lf.amountPaid, lf.paidAt "
+                    + " lf.id AS loanFineId, lf.fineAmount, lf.paidAt "
                     + " FROM LOANEDBOOKS lb "
                     + " INNER JOIN books b on lb.bookId = b.id "
                     + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
@@ -355,9 +312,9 @@ public class LoanedBookService {
                         }});
 
                         if (resultSet.getInt("loanFineId") != 0) {
-                            put("finePaid", new HashMap<>() {{
+                            put("loanFine", new HashMap<>() {{
                                 put("loanFineId", resultSet.getInt("loanFineId"));
-                                put("amountPaid", resultSet.getInt("amountPaid"));
+                                put("fineAmount", resultSet.getInt("fineAmount"));
                                 put("paidAt", resultSet.getDate("paidAt"));
                             }});
                         }

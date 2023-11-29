@@ -13,14 +13,14 @@ import me.jack.lat.lmsbackendmongo.service.oracleDB.LoanFinesService;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/users/me/fines/paid")
-public class userFinesPaidResource {
+@Path("/users/me/fines")
+public class userFinesResource {
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userFinesPaid(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext) {
+    public Response userFines(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext) {
 
         String userId = (String) requestContext.getProperty("userId");
 
@@ -29,22 +29,22 @@ public class userFinesPaidResource {
         }
 
         if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-            return userFinesPaidSQL(userId);
+            return userFinesSQL(userId);
         } else {
-            return userFinesPaidMongoDB(userId);
+            return userFinesMongoDB(userId);
         }
     }
 
-    public Response userFinesPaidMongoDB(String userId) {
+    public Response userFinesMongoDB(String userId) {
         Map<String, Object> response = new HashMap<>();
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 
-    public Response userFinesPaidSQL(String userId) {
+    public Response userFinesSQL(String userId) {
         Map<String, Object> response = new HashMap<>();
 
         LoanFinesService loanFinesService = new LoanFinesService();
-        HashMap<String, Object>[] loanFines = loanFinesService.findFinesPaidForUser(Integer.parseInt(userId));
+        HashMap<String, Object>[] loanFines = loanFinesService.findFinesForUser(Integer.parseInt(userId));
 
         response.put("loanFines", loanFines);
 

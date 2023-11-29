@@ -22,8 +22,11 @@ public class LoanFinesService {
         ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.* "
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
+                    + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
                     + " FROM loanedBooks lb "
+                    + " INNER JOIN books b on b.id = lb.bookId "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL");
 
@@ -33,9 +36,112 @@ public class LoanFinesService {
                 while (resultSet.next()) {
                     loanFines.add(new HashMap<>() {{
                         put("id", resultSet.getInt("id"));
-                        put("loanId", resultSet.getInt("loanId"));
-                        put("amountPaid", resultSet.getDouble("amountPaid"));
+                        put("fineAmount", resultSet.getDouble("fineAmount"));
                         put("paidAt", resultSet.getDate("paidAt"));
+                        put("book", new HashMap<>() {{
+                            put("id", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                        }});
+                        put("loan", new HashMap<>() {{
+                            put("id", resultSet.getInt("loanId"));
+                            put("loanedAt", resultSet.getDate("loanedAt"));
+                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        }});
+                    }});
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
+        }
+
+        return loanFines.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findFinesPaidForUser(int userId) {
+        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
+                    + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " FROM loanedBooks lb "
+                    + " INNER JOIN books b on b.id = lb.bookId "
+                    + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
+                    + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.paidAt IS NOT NULL");
+
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanFines.add(new HashMap<>() {{
+                        put("id", resultSet.getInt("id"));
+                        put("fineAmount", resultSet.getDouble("fineAmount"));
+                        put("paidAt", resultSet.getDate("paidAt"));
+                        put("book", new HashMap<>() {{
+                            put("id", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                        }});
+                        put("loan", new HashMap<>() {{
+                            put("id", resultSet.getInt("loanId"));
+                            put("loanedAt", resultSet.getDate("loanedAt"));
+                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        }});
+                    }});
+                }
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
+        }
+
+        return loanFines.toArray(new HashMap[0]);
+    }
+
+    public HashMap<String, Object>[] findFinesUnpaidForUser(int userId) {
+        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
+                    + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " FROM loanedBooks lb "
+                    + " INNER JOIN books b on b.id = lb.bookId "
+                    + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
+                    + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.paidAt IS NULL");
+
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanFines.add(new HashMap<>() {{
+                        put("id", resultSet.getInt("id"));
+                        put("fineAmount", resultSet.getDouble("fineAmount"));
+                        put("paidAt", resultSet.getDate("paidAt"));
+                        put("book", new HashMap<>() {{
+                            put("id", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                        }});
+                        put("loan", new HashMap<>() {{
+                            put("id", resultSet.getInt("loanId"));
+                            put("loanedAt", resultSet.getDate("loanedAt"));
+                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        }});
                     }});
                 }
             }
@@ -51,7 +157,7 @@ public class LoanFinesService {
         int totalFinePaidAmount = 0;
 
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT SUM(lf.amountPaid) as totalFinePaidAmount "
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT SUM(lf.fineAmount) as totalFinePaidAmount "
                     + " FROM loanedBooks lb "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL");

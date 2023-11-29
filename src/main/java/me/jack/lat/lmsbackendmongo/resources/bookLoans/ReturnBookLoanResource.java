@@ -1,5 +1,6 @@
 package me.jack.lat.lmsbackendmongo.resources.bookLoans;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -19,6 +20,8 @@ import java.util.Objects;
 
 @Path("/loans/{loanId}/return")
 public class ReturnBookLoanResource {
+
+    private static final Dotenv dotenv = Dotenv.configure().load();
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
@@ -68,13 +71,9 @@ public class ReturnBookLoanResource {
             return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
-        // if loanedBook is overdue (by 14 days), prevent user from returning book
+        // if loanedBook is overdue (by 14 days), handle fine creation
         if (loanedBookService.isOverdue(loanedBook)) {
-            response.put("error", new HashMap<>(){{
-                put("message", "LoanBook is overdue");
-                put("type", 409);
-            }});
-            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
+            loanedBook.setLoanFine(new LoanedBook.LoanFine((Double.parseDouble(dotenv.get("LATE_FINE_PER_DAY")) * loanedBookService.getDaysOverdue(loanedBook)) + 1));
         }
 
         loanedBook.setReturnedAt(new Date());
@@ -116,14 +115,6 @@ public class ReturnBookLoanResource {
         if (loanedBook.get("returnedAt") != null) {
             response.put("error", new HashMap<>(){{
                 put("message", "LoanBook already returned");
-                put("type", 409);
-            }});
-            return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
-        }
-
-        if (loanedBookService.isOverdue(loanedBook)) {
-            response.put("error", new HashMap<>(){{
-                put("message", "LoanBook is overdue");
                 put("type", 409);
             }});
             return Response.status(Response.Status.CONFLICT).entity(response).type(MediaType.APPLICATION_JSON).build();
