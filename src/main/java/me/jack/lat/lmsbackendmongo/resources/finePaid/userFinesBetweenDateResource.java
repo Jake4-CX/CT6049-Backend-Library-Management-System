@@ -15,14 +15,14 @@ import java.sql.Date;
 import java.text.ParseException;
 import java.util.HashMap;
 
-@Path("/users/me/fines/paid/between")
-public class userFinesPaidBetweenDateResource {
+@Path("/users/me/fines/between")
+public class userFinesBetweenDateResource {
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userFinesPaidBetweenDate(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
+    public Response userFinesBetweenDate(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
 
         if (startDate == null || startDate.isEmpty()) {
             // default startDate as today minus 30 days (as Date)
@@ -55,9 +55,9 @@ public class userFinesPaidBetweenDateResource {
             }
 
             if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-                return userFinesPaidBetweenDateSQL(userId, startDateDate, endDateDate);
+                return userFinesBetweenDateSQL(userId, startDateDate, endDateDate);
             } else {
-                return userFinesPaidBetweenDateMongoDB(userId, startDateDate, endDateDate);
+                return userFinesBetweenDateMongoDB(userId, startDateDate, endDateDate);
             }
 
         } catch (ParseException e) {
@@ -66,20 +66,19 @@ public class userFinesPaidBetweenDateResource {
         }
     }
 
-    public Response userFinesPaidBetweenDateMongoDB(String userId, Date startDate, Date endDate) {
+    public Response userFinesBetweenDateMongoDB(String userId, Date startDate, Date endDate) {
         return Response.status(Response.Status.OK).entity("Not implemented yet").type(MediaType.APPLICATION_JSON).build();
     }
 
-    public Response userFinesPaidBetweenDateSQL(String userId, Date startDate, Date endDate) {
+    public Response userFinesBetweenDateSQL(String userId, Date startDate, Date endDate) {
         HashMap<String, Object> response = new HashMap<>();
 
         LoanFinesService loanFinesService = new LoanFinesService();
-        HashMap<String, Object>[] loanFines = loanFinesService.findPaidFinesForUserBetweenDate(Integer.parseInt(userId), startDate, endDate);
+        HashMap<String, Object>[] loanFines = loanFinesService.findFinesForUserBetweenDate(Integer.parseInt(userId), startDate, endDate);
 
         response.put("loanFines", loanFines);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 
     }
-
 }
