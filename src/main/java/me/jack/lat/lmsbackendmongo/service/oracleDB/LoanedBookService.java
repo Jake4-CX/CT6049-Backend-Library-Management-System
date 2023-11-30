@@ -162,6 +162,78 @@ public class LoanedBookService {
         return loanedBooks.toArray(new HashMap[0]);
     }
 
+    public HashMap<String, Object>[] getLoanedBooksForUserBetweenDate(Integer userId, Date startDate, Date endDate) {
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT lb.*, "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription, "
+                    + " u.userEmail, u.userRole, u.userCreatedDate, u.userUpdatedDate, "
+                    + " lf.id AS loanFineId, lf.fineAmount, lf.paidAt "
+                    + " FROM LOANEDBOOKS lb "
+                    + " INNER JOIN books b on lb.bookId = b.id "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
+                    + " INNER JOIN users u on lb.userId = u.id "
+                    + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
+                    + " WHERE userId = ? AND loanedAt BETWEEN ? AND ?");
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setDate(2, startDate);
+            preparedStatement.setDate(3, endDate);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    loanedBooks.add(new HashMap<>(){{
+                        put("loanedBookId", resultSet.getInt("id"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("book", new HashMap<>(){{
+                            put("bookId", resultSet.getInt("bookId"));
+                            put("bookName", resultSet.getString("bookName"));
+                            put("bookISBN", resultSet.getString("bookISBN"));
+                            put("bookDescription", resultSet.getString("bookDescription"));
+                            put("bookQuantity", resultSet.getInt("bookQuantity"));
+                            put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
+                            put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>(){{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>(){{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
+                        }});
+                        put("user", new HashMap<>(){{
+                            put("userId", resultSet.getInt("userId"));
+                            put("userEmail", resultSet.getString("userEmail"));
+                            put("userRole", resultSet.getString("userRole"));
+                            put("userCreatedDate", resultSet.getDate("userCreatedDate"));
+                            put("userUpdatedDate", resultSet.getDate("userUpdatedDate"));
+                        }});
+
+                        if (resultSet.getInt("loanFineId") != 0) {
+                            put("loanFine", new HashMap<>() {{
+                                put("loanFineId", resultSet.getInt("loanFineId"));
+                                put("fineAmount", resultSet.getInt("fineAmount"));
+                                put("paidAt", resultSet.getDate("paidAt"));
+                            }});
+                        }
+                    }});
+                }
+
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed getting loaned books" + e.getMessage());
+            return null;
+        }
+
+        return loanedBooks.toArray(new HashMap[0]);
+    }
+
     public HashMap<String, Object>[] findAllOverdueBooks() {
         ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 

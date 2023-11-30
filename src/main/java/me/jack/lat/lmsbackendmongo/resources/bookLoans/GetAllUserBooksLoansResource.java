@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Path("/users/me/loans/all")
-public class GetAllUserBooksLoans {
+public class GetAllUserBooksLoansResource {
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})

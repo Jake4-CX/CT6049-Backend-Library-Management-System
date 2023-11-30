@@ -349,6 +349,25 @@ public class LoanedBookService {
     }
 
     /**
+     * Return all loaned books for a given user, between dates (start, end). (regardless of returned status)
+     *
+     * @param user  user to relate against
+     *
+     * @return List<LoanedBook>
+     */
+    public List<LoanedBook> findLoanedBooksForUserBetweenDate(User user, Date startDate, Date endDate) {
+        var query = datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.eq("user", user),
+                        Filters.gte("loanedAt", startDate),
+                        Filters.lte("loanedAt", endDate)
+                );
+
+        return query.iterator().toList();
+    }
+
+
+    /**
      * Return historic loaned books for a given user.
      *
      * @param user  user to relate against
