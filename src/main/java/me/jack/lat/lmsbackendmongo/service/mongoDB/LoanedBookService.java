@@ -43,6 +43,27 @@ public class LoanedBookService {
     }
 
     /**
+     * Get LoanedBook from loanFineId.
+     *
+     * @param loanFineId  loanedBookId to search for
+     *
+     * @return LoanedBook
+     */
+    public LoanedBook getLoanedBookFromLoanFineId(String loanFineId) {
+        try {
+            return datastore.find(LoanedBook.class)
+                    .filter(
+                            Filters.eq("loanFine._id", new ObjectId(loanFineId))
+                    )
+                    .first();
+        } catch (Exception e) {
+            logger.warning("Failed to get loanedBook from loanFineId: " + e.getMessage());
+            return null;
+        }
+    }
+
+
+    /**
      * Update loaned book.
      *
      * @param loanedBook loanedBook to update
@@ -364,6 +385,29 @@ public class LoanedBookService {
                         )
                 )
                 .first();
+    }
+
+    /**
+     * Pay fine for a given loanedBook.
+     *
+     * @param loanedBook  loanedBook to relate against
+     *
+     * @return boolean
+     */
+    public boolean payFine(LoanedBook loanedBook) {
+        LoanedBook.LoanFine loanFine = loanedBook.getLoanFine();
+        loanFine.setPaidAt(new Date());
+
+        loanedBook.setLoanFine(loanFine);
+
+        try {
+            datastore.save(loanedBook);
+        } catch (Exception e) {
+            logger.warning("Failed to pay fine for loanedBook: " + e.getMessage());
+            return false;
+        }
+
+        return true;
     }
 
 
