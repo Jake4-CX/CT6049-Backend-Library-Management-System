@@ -10,6 +10,7 @@ import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.oracleDB.LoanFinesService;
 import org.bson.types.ObjectId;
 
 import java.util.HashMap;
@@ -98,7 +99,7 @@ public class userFinesPayResource {
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
-        // LoanFinesService loanFinesService = new LoanFinesService();
+        LoanFinesService loanFinesService = new LoanFinesService();
         Error error = loanFinesService.payFine(Integer.valueOf(userId), Integer.valueOf(fineId));
 
         if (error != null) {
