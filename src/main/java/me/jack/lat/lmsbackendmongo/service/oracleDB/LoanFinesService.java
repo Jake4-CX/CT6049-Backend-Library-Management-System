@@ -5,6 +5,7 @@ import me.jack.lat.lmsbackendmongo.util.OracleDBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -195,7 +196,7 @@ public class LoanFinesService {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    loanFines.add(new HashMap<>() {{
+                    if (resultSet.getInt("id") != 0) {
                         loanFines.add(new HashMap<>() {{
                             put("loanFineId", resultSet.getInt("id"));
                             put("fineAmount", resultSet.getDouble("fineAmount"));
@@ -215,7 +216,7 @@ public class LoanFinesService {
                                 put("returnedAt", resultSet.getDate("returnedAt"));
                             }});
                         }});
-                    }});
+                    }
                 }
             }
 
@@ -224,5 +225,31 @@ public class LoanFinesService {
         }
 
         return loanFines.toArray(new HashMap[0]);
+    }
+
+    public Error payFine(Integer loanFineId, Integer userId) {
+
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE loanFines lf "
+                    + " SET paidAt = ? "
+                    + " WHERE lf.id = ? AND EXISTS "
+                    + " (SELECT 1 FROM loanedBooks lb WHERE lb.id = lf.loanId AND lb.userId = ?) ");
+
+            preparedStatement.setDate(1, new java.sql.Date(new Date().getTime()));
+            preparedStatement.setInt(2, loanFineId);
+            preparedStatement.setInt(3, userId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                return new Error("Failed paying fine - loanFine does not exist or does not belong to user");
+            }
+
+        } catch (SQLException e) {
+            logger.warning("Failed paying fine for loanFineId: " + e.getMessage());
+            return new Error("Failed paying fine");
+        }
+
+        return null;
     }
 }
