@@ -314,16 +314,17 @@ public class LoanFinesService {
         return loanedBooks.toArray(new HashMap[0]);
     }
 
-    public Error payFine(Integer loanFineId, Integer userId) {
+    public Error payFine(Integer loanedBookId, Integer userId) {
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE loanFines lf "
                     + " SET paidAt = ? "
-                    + " WHERE lf.id = ? AND EXISTS "
-                    + " (SELECT 1 FROM loanedBooks lb WHERE lb.id = lf.loanId AND lb.userId = ?) ");
+                    + " WHERE EXISTS ("
+                    + " SELECT 1 FROM loanedBooks lb "
+                    + " WHERE lb.id = ? AND lb.userId = ? AND lb.id = lf.loanId) ");
 
             preparedStatement.setDate(1, new java.sql.Date(new Date().getTime()));
-            preparedStatement.setInt(2, loanFineId);
+            preparedStatement.setInt(2, loanedBookId);
             preparedStatement.setInt(3, userId);
 
             int rowsAffected = preparedStatement.executeUpdate();

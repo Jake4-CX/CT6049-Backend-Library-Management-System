@@ -16,14 +16,17 @@ import org.bson.types.ObjectId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
-@Path("/users/me/fines/{fineId}/pay")
+@Path("/users/me/fines/{loanedBookId}/pay")
 public class userFinesPayResource {
+
+    private static final Logger logger = Logger.getLogger(userFinesPayResource.class.getName());
 
     @GET
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userFinesPay(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext, @PathParam("fineId") String fineId) {
+    public Response userFinesPay(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext, @PathParam("loanedBookId") String loanedBookId) {
 
         String userId = (String) requestContext.getProperty("userId");
 
@@ -32,17 +35,17 @@ public class userFinesPayResource {
         }
 
         if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-            return userFinesPaySQL(fineId, userId);
+            return userFinesPaySQL(loanedBookId, userId);
         } else {
-            return userFinesPayMongoDB(fineId, userId);
+            return userFinesPayMongoDB(loanedBookId, userId);
         }
     }
 
-    private Response userFinesPayMongoDB(String userId, String fineId) {
+    private Response userFinesPayMongoDB(String loanedBookId, String userId) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            new ObjectId(fineId);
+            new ObjectId(loanedBookId);
 
         } catch (Exception e) {
             response.put("message", "No loanFine found with this id");
@@ -50,7 +53,15 @@ public class userFinesPayResource {
         }
 
         LoanedBookService loanedBookService = new LoanedBookService();
-        LoanedBook loanedBook = loanedBookService.getLoanedBookFromLoanFineId(fineId);
+        LoanedBook loanedBook = loanedBookService.getLoanedBookFromId(loanedBookId);
+
+        if (loanedBook.getLoanedBookId() == null) {
+            response.put("error", new HashMap<>(){{
+                put("message", "LoanBook does not exist");
+                put("type", 400);
+            }});
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
+        }
 
         if (!Objects.equals(loanedBook.getUser().getUserId(), userId)) {
             response.put("error", new HashMap<>(){{
@@ -89,18 +100,18 @@ public class userFinesPayResource {
 
     }
 
-    private Response userFinesPaySQL(String userId, String fineId) {
+    private Response userFinesPaySQL(String loanedBookId, String userId) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            Integer.valueOf(fineId);
+            Integer.valueOf(loanedBookId);
         } catch (NumberFormatException e) {
             response.put("message", "No loanFine found with this id");
             return Response.status(Response.Status.NOT_FOUND).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
 
         LoanFinesService loanFinesService = new LoanFinesService();
-        Error error = loanFinesService.payFine(Integer.valueOf(userId), Integer.valueOf(fineId));
+        Error error = loanFinesService.payFine(Integer.valueOf(loanedBookId), Integer.valueOf(userId));
 
         if (error != null) {
             response.put("error", new HashMap<>(){{

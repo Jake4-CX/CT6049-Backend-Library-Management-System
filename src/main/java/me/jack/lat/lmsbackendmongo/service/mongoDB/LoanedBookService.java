@@ -43,27 +43,6 @@ public class LoanedBookService {
     }
 
     /**
-     * Get LoanedBook from loanFineId.
-     *
-     * @param loanFineId  loanedBookId to search for
-     *
-     * @return LoanedBook
-     */
-    public LoanedBook getLoanedBookFromLoanFineId(String loanFineId) {
-        try {
-            return datastore.find(LoanedBook.class)
-                    .filter(
-                            Filters.eq("loanFine._id", new ObjectId(loanFineId))
-                    )
-                    .first();
-        } catch (Exception e) {
-            logger.warning("Failed to get loanedBook from loanFineId: " + e.getMessage());
-            return null;
-        }
-    }
-
-
-    /**
      * Update loaned book.
      *
      * @param loanedBook loanedBook to update
