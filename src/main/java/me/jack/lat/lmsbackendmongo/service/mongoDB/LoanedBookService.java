@@ -429,6 +429,48 @@ public class LoanedBookService {
         return true;
     }
 
+    /**
+     * Return all paid fines for a given user.
+     *
+     * @param user  user to relate against
+     *
+     * @return List<LoanedBook>
+     */
+    public List<LoanedBook> findPaidFinesForUserBetweenDate(User user, Date startDate, Date endDate) {
+        return datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.and(
+                                Filters.eq("user", user),
+                                Filters.exists("loanFine"),
+                                Filters.exists("loanFine.paidAt"),
+                                Filters.gte("loanFine.paidAt", startDate),
+                                Filters.lte("loanFine.paidAt", endDate)
+                        )
+                )
+                .iterator()
+                .toList();
+    }
+
+    /**
+     * Return all unpaid fines for a given user.
+     *
+     * @param user  user to relate against
+     *
+     * @return List<LoanedBook>
+     */
+    public List<LoanedBook> findFinesForUserBetweenDate(User user, Date startDate, Date endDate) {
+        return datastore.find(LoanedBook.class)
+                .filter(
+                        Filters.and(
+                                Filters.eq("user", user),
+                                Filters.exists("loanFine"),
+                                Filters.gte("returnedAt", startDate),
+                                Filters.lte("returnedAt", endDate)
+                        )
+                )
+                .iterator()
+                .toList();
+    }
 
     private Date getFourteenDaysAgo() {
         final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;

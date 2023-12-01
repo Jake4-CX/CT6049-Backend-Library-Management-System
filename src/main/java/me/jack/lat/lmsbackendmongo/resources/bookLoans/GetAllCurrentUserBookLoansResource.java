@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Get current loans for current user (current = not returned)
 @Path("/users/me/loans")
 public class GetAllCurrentUserBookLoansResource {
 

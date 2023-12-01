@@ -46,7 +46,7 @@ public class userFinesResource {
         LoanFinesService loanFinesService = new LoanFinesService();
         HashMap<String, Object>[] loanFines = loanFinesService.findFinesForUser(Integer.parseInt(userId));
 
-        response.put("loanFines", loanFines);
+        response.put("loanedBooks", loanFines);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }

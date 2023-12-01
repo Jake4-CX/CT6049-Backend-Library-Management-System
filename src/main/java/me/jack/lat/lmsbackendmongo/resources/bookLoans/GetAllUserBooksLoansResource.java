@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Get all user book loans - regardless of status (current, returned, overdue)
 @Path("/users/me/loans/all")
 public class GetAllUserBooksLoansResource {
 

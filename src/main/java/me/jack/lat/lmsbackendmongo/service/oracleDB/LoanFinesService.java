@@ -20,14 +20,18 @@ public class LoanFinesService {
     }
 
     public HashMap<String, Object>[] findFinesForUser(int userId) {
-        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
                     + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
-                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
                     + " FROM loanedBooks lb "
                     + " INNER JOIN books b on b.id = lb.bookId "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL");
 
@@ -35,10 +39,11 @@ public class LoanFinesService {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    loanFines.add(new HashMap<>() {{
-                        put("loanFineId", resultSet.getInt("id"));
-                        put("fineAmount", resultSet.getDouble("fineAmount"));
-                        put("paidAt", resultSet.getDate("paidAt"));
+
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("loanId"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
                         put("book", new HashMap<>() {{
                             put("bookId", resultSet.getInt("bookId"));
                             put("bookName", resultSet.getString("bookName"));
@@ -47,11 +52,19 @@ public class LoanFinesService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
                         }});
-                        put("loan", new HashMap<>() {{
-                            put("loanedBookId", resultSet.getInt("loanId"));
-                            put("loanedAt", resultSet.getDate("loanedAt"));
-                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("loanFine", new HashMap<>() {{
+                            put("loanFineId", resultSet.getInt("id"));
+                            put("fineAmount", resultSet.getDouble("fineAmount"));
+                            put("paidAt", resultSet.getDate("paidAt"));
                         }});
                     }});
                 }
@@ -61,18 +74,22 @@ public class LoanFinesService {
             logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
         }
 
-        return loanFines.toArray(new HashMap[0]);
+        return loanedBooks.toArray(new HashMap[0]);
     }
 
     public HashMap<String, Object>[] findFinesPaidForUser(int userId) {
-        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
                     + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
-                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
                     + " FROM loanedBooks lb "
                     + " INNER JOIN books b on b.id = lb.bookId "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.paidAt IS NOT NULL");
 
@@ -80,10 +97,10 @@ public class LoanFinesService {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    loanFines.add(new HashMap<>() {{
-                        put("loanFineId", resultSet.getInt("id"));
-                        put("fineAmount", resultSet.getDouble("fineAmount"));
-                        put("paidAt", resultSet.getDate("paidAt"));
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("loanId"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
                         put("book", new HashMap<>() {{
                             put("bookId", resultSet.getInt("bookId"));
                             put("bookName", resultSet.getString("bookName"));
@@ -92,11 +109,19 @@ public class LoanFinesService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
                         }});
-                        put("loan", new HashMap<>() {{
-                            put("loanedBookId", resultSet.getInt("loanId"));
-                            put("loanedAt", resultSet.getDate("loanedAt"));
-                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("loanFine", new HashMap<>() {{
+                            put("loanFineId", resultSet.getInt("id"));
+                            put("fineAmount", resultSet.getDouble("fineAmount"));
+                            put("paidAt", resultSet.getDate("paidAt"));
                         }});
                     }});
                 }
@@ -106,18 +131,22 @@ public class LoanFinesService {
             logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
         }
 
-        return loanFines.toArray(new HashMap[0]);
+        return loanedBooks.toArray(new HashMap[0]);
     }
 
     public HashMap<String, Object>[] findFinesUnpaidForUser(int userId) {
-        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
                     + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
-                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
                     + " FROM loanedBooks lb "
                     + " INNER JOIN books b on b.id = lb.bookId "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.paidAt IS NULL");
 
@@ -125,10 +154,10 @@ public class LoanFinesService {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    loanFines.add(new HashMap<>() {{
-                        put("loanFineId", resultSet.getInt("id"));
-                        put("fineAmount", resultSet.getDouble("fineAmount"));
-                        put("paidAt", resultSet.getDate("paidAt"));
+                    loanedBooks.add(new HashMap<>() {{
+                        put("loanedBookId", resultSet.getInt("loanId"));
+                        put("loanedAt", resultSet.getDate("loanedAt"));
+                        put("returnedAt", resultSet.getDate("returnedAt"));
                         put("book", new HashMap<>() {{
                             put("bookId", resultSet.getInt("bookId"));
                             put("bookName", resultSet.getString("bookName"));
@@ -137,11 +166,19 @@ public class LoanFinesService {
                             put("bookQuantity", resultSet.getInt("bookQuantity"));
                             put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                             put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                            put("bookAuthor", new HashMap<>() {{
+                                put("authorFirstName", resultSet.getString("authorFirstName"));
+                                put("authorLastName", resultSet.getString("authorLastName"));
+                            }});
+                            put("bookCategory", new HashMap<>() {{
+                                put("categoryName", resultSet.getString("categoryName"));
+                                put("categoryDescription", resultSet.getString("categoryDescription"));
+                            }});
                         }});
-                        put("loan", new HashMap<>() {{
-                            put("loanedBookId", resultSet.getInt("loanId"));
-                            put("loanedAt", resultSet.getDate("loanedAt"));
-                            put("returnedAt", resultSet.getDate("returnedAt"));
+                        put("loanFine", new HashMap<>() {{
+                            put("loanFineId", resultSet.getInt("id"));
+                            put("fineAmount", resultSet.getDouble("fineAmount"));
+                            put("paidAt", resultSet.getDate("paidAt"));
                         }});
                     }});
                 }
@@ -151,18 +188,22 @@ public class LoanFinesService {
             logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
         }
 
-        return loanFines.toArray(new HashMap[0]);
+        return loanedBooks.toArray(new HashMap[0]);
     }
 
     public HashMap<String, Object>[] findPaidFinesForUserBetweenDate(int userId, Date startDate, Date endDate) {
-        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
                     + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
-                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
                     + " FROM loanedBooks lb "
                     + " INNER JOIN books b on b.id = lb.bookId "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
                     + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.fineAmount IS NOT NULL AND lf.paidAt BETWEEN ? AND ?");
 
@@ -173,10 +214,10 @@ public class LoanFinesService {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     if (resultSet.getInt("id") != 0) {
-                        loanFines.add(new HashMap<>() {{
-                            put("loanFineId", resultSet.getInt("id"));
-                            put("fineAmount", resultSet.getDouble("fineAmount"));
-                            put("paidAt", resultSet.getDate("paidAt"));
+                        loanedBooks.add(new HashMap<>() {{
+                            put("loanedBookId", resultSet.getInt("loanId"));
+                            put("loanedAt", resultSet.getDate("loanedAt"));
+                            put("returnedAt", resultSet.getDate("returnedAt"));
                             put("book", new HashMap<>() {{
                                 put("bookId", resultSet.getInt("bookId"));
                                 put("bookName", resultSet.getString("bookName"));
@@ -185,11 +226,19 @@ public class LoanFinesService {
                                 put("bookQuantity", resultSet.getInt("bookQuantity"));
                                 put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                                 put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                                put("bookAuthor", new HashMap<>() {{
+                                    put("authorFirstName", resultSet.getString("authorFirstName"));
+                                    put("authorLastName", resultSet.getString("authorLastName"));
+                                }});
+                                put("bookCategory", new HashMap<>() {{
+                                    put("categoryName", resultSet.getString("categoryName"));
+                                    put("categoryDescription", resultSet.getString("categoryDescription"));
+                                }});
                             }});
-                            put("loan", new HashMap<>() {{
-                                put("loanedBookId", resultSet.getInt("loanId"));
-                                put("loanedAt", resultSet.getDate("loanedAt"));
-                                put("returnedAt", resultSet.getDate("returnedAt"));
+                            put("loanFine", new HashMap<>() {{
+                                put("loanFineId", resultSet.getInt("id"));
+                                put("fineAmount", resultSet.getDouble("fineAmount"));
+                                put("paidAt", resultSet.getDate("paidAt"));
                             }});
                         }});
                     }
@@ -200,20 +249,24 @@ public class LoanFinesService {
             logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
         }
 
-        return loanFines.toArray(new HashMap[0]);
+        return loanedBooks.toArray(new HashMap[0]);
     }
 
     public HashMap<String, Object>[] findFinesForUserBetweenDate(int userId, Date startDate, Date endDate) {
-        ArrayList<HashMap<String, Object>> loanFines = new ArrayList<>();
+        ArrayList<HashMap<String, Object>> loanedBooks = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT lf.*, "
                     + " lb.id as loanId, lb.userId as userId, lb.bookId as bookId, lb.loanedAt as loanedAt, lb.returnedAt as returnedAt, "
-                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate "
+                    + " b.bookName, b.bookISBN, b.bookISBN, b.bookDescription, b.bookQuantity, b.bookThumbnailURL, b.bookPublishedDate, "
+                    + " ba.authorFirstName, ba.authorLastName, "
+                    + " bc.categoryName, bc.categoryDescription "
                     + " FROM loanedBooks lb "
                     + " INNER JOIN books b on b.id = lb.bookId "
+                    + " INNER JOIN bookAuthors ba on b.bookAuthorId = ba.id "
+                    + " INNER JOIN bookCategories bc on b.bookCategoryId = bc.id "
                     + " LEFT JOIN loanFines lf on lb.id = lf.loanId "
-                    + " WHERE userId = ? AND lf.id IS NOT NULL AND lf.paidAt BETWEEN ? AND ?");
+                    + " WHERE userId = ? AND lf.id IS NOT NULL AND lb.returnedAt BETWEEN ? AND ?");
 
             preparedStatement.setInt(1, userId);
             preparedStatement.setDate(2, new java.sql.Date(startDate.getTime()));
@@ -222,10 +275,11 @@ public class LoanFinesService {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     if (resultSet.getInt("id") != 0) {
-                        loanFines.add(new HashMap<>() {{
-                            put("loanFineId", resultSet.getInt("id"));
-                            put("fineAmount", resultSet.getDouble("fineAmount"));
-                            put("paidAt", resultSet.getDate("paidAt"));
+
+                        loanedBooks.add(new HashMap<>() {{
+                            put("loanedBookId", resultSet.getInt("loanId"));
+                            put("loanedAt", resultSet.getDate("loanedAt"));
+                            put("returnedAt", resultSet.getDate("returnedAt"));
                             put("book", new HashMap<>() {{
                                 put("bookId", resultSet.getInt("bookId"));
                                 put("bookName", resultSet.getString("bookName"));
@@ -234,11 +288,19 @@ public class LoanFinesService {
                                 put("bookQuantity", resultSet.getInt("bookQuantity"));
                                 put("bookThumbnailURL", resultSet.getString("bookThumbnailURL"));
                                 put("bookPublishedDate", resultSet.getDate("bookPublishedDate"));
+                                put("bookAuthor", new HashMap<>() {{
+                                    put("authorFirstName", resultSet.getString("authorFirstName"));
+                                    put("authorLastName", resultSet.getString("authorLastName"));
+                                }});
+                                put("bookCategory", new HashMap<>() {{
+                                    put("categoryName", resultSet.getString("categoryName"));
+                                    put("categoryDescription", resultSet.getString("categoryDescription"));
+                                }});
                             }});
-                            put("loan", new HashMap<>() {{
-                                put("loanedBookId", resultSet.getInt("loanId"));
-                                put("loanedAt", resultSet.getDate("loanedAt"));
-                                put("returnedAt", resultSet.getDate("returnedAt"));
+                            put("loanFine", new HashMap<>() {{
+                                put("loanFineId", resultSet.getInt("id"));
+                                put("fineAmount", resultSet.getDouble("fineAmount"));
+                                put("paidAt", resultSet.getDate("paidAt"));
                             }});
                         }});
                     }
@@ -249,7 +311,7 @@ public class LoanFinesService {
             logger.warning("Failed getting loanFines for userId: " +  e.getMessage());
         }
 
-        return loanFines.toArray(new HashMap[0]);
+        return loanedBooks.toArray(new HashMap[0]);
     }
 
     public Error payFine(Integer loanFineId, Integer userId) {

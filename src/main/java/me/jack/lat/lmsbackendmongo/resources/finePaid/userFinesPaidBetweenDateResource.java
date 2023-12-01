@@ -6,14 +6,19 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
+import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
 import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
+import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
 import me.jack.lat.lmsbackendmongo.service.oracleDB.LoanFinesService;
 import me.jack.lat.lmsbackendmongo.util.DateUtil;
 
 import java.sql.Date;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Path("/users/me/fines/paid/between")
 public class userFinesPaidBetweenDateResource {
@@ -67,7 +72,25 @@ public class userFinesPaidBetweenDateResource {
     }
 
     public Response userFinesPaidBetweenDateMongoDB(String userId, Date startDate, Date endDate) {
-        return Response.status(Response.Status.OK).entity("Not implemented yet").type(MediaType.APPLICATION_JSON).build();
+        Map<String, Object> response = new HashMap<>();
+
+        UserService userService = new UserService();
+        User user = userService.findUserById(userId);
+
+        LoanedBookService loanedBookService = new LoanedBookService();
+        List<LoanedBook> loanedBooks = loanedBookService.findPaidFinesForUserBetweenDate(user, startDate, endDate);
+
+        loanedBooks.forEach(loanedBook -> {
+            User loanedBookUser = loanedBook.getUser();
+
+            loanedBookUser.setUserPassword(null);
+            loanedBookUser.setRefreshTokens(null);
+            loanedBook.setUser(loanedBookUser);
+        });
+
+        response.put("loanedBooks", loanedBooks);
+
+        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     public Response userFinesPaidBetweenDateSQL(String userId, Date startDate, Date endDate) {
@@ -76,7 +99,7 @@ public class userFinesPaidBetweenDateResource {
         LoanFinesService loanFinesService = new LoanFinesService();
         HashMap<String, Object>[] loanFines = loanFinesService.findPaidFinesForUserBetweenDate(Integer.parseInt(userId), startDate, endDate);
 
-        response.put("loanFines", loanFines);
+        response.put("loanedBooks", loanFines);
 
         return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 
