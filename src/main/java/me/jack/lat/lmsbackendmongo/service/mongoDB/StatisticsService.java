@@ -4,14 +4,11 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
-import me.jack.lat.lmsbackendmongo.entities.Book;
 import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.util.MongoDBUtil;
+import org.bson.Document;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class StatisticsService {
@@ -75,6 +72,34 @@ public class StatisticsService {
         ).count());
 
         return stats;
+    }
+
+    /**
+        Admin Book Category Statistics, returns totalBooks for each category (along with category name)
+
+        @return HashMap<String, Object>[]
+
+     **/
+    public HashMap<String, Object>[] getAdminBookCategoryStatistics() {
+        List<HashMap<String, Object>> categoryCounts = new ArrayList<>();
+
+        try {
+            for (Document result : datastore.getDatabase().getCollection("books")
+                    .aggregate(Arrays.asList(
+                            Aggregates.lookup("bookCategories", "bookCategoryId", "_id", "category"),
+                            Aggregates.unwind("$category"),
+                            Aggregates.group("$category.categoryName", Accumulators.sum("bookCount", 1))
+                    ))) {
+                HashMap<String, Object> categoryCount = new HashMap<>();
+                categoryCount.put("categoryName", result.getString("_id"));
+                categoryCount.put("bookCount", result.getInteger("bookCount"));
+                categoryCounts.add(categoryCount);
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to get admin book category statistics: " + e.getMessage());
+        }
+
+        return categoryCounts.toArray(new HashMap[0]);
     }
 
 }
