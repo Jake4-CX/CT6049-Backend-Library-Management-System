@@ -30,6 +30,8 @@ public class StatisticsService {
 
         HashMap<String, Object> stats = new HashMap<>();
 
+        Date dateOverdue = new Date(System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000));
+
         stats.put("totalBooks", datastore.getDatabase().getCollection("books").countDocuments());
         stats.put("totalUsers", datastore.getDatabase().getCollection("users").countDocuments());
         stats.put("totalIssuedBooks", datastore.find(LoanedBook.class).filter(
@@ -38,7 +40,7 @@ public class StatisticsService {
         stats.put("totalOverdueBooks", datastore.find(LoanedBook.class).filter(
                 Filters.and(
                         Filters.eq("returnedAt", null),
-                        Filters.lte("loanedAt", System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000))
+                        Filters.lte("loanedAt", dateOverdue)
                 )
         ).count());
 
@@ -55,19 +57,21 @@ public class StatisticsService {
 
         HashMap<String, Object> stats = new HashMap<>();
 
+        Date dateOverdue = new Date(System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000));
+
         stats.put("totalIssuedBooks", datastore.find(LoanedBook.class).filter(
                 Filters.eq("returnedAt", null)
         ).count());
         stats.put("totalOverdueBooks", datastore.find(LoanedBook.class).filter(
                 Filters.and(
                         Filters.eq("returnedAt", null),
-                        Filters.lte("loanedAt", System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000))
+                        Filters.lte("loanedAt", dateOverdue)
                 )
         ).count());
         stats.put("totalNotOverdueBooks", datastore.find(LoanedBook.class).filter(
                 Filters.and(
                         Filters.eq("returnedAt", null),
-                        Filters.gt("loanedAt", System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000))
+                        Filters.gt("loanedAt", dateOverdue)
                 )
         ).count());
 
