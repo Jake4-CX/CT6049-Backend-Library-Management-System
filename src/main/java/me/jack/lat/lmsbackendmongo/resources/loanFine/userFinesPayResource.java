@@ -1,4 +1,4 @@
-package me.jack.lat.lmsbackendmongo.resources.finePaid;
+package me.jack.lat.lmsbackendmongo.resources.loanFine;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
