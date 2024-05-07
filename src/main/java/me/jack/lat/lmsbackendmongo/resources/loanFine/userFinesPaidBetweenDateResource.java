@@ -6,19 +6,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
-import me.jack.lat.lmsbackendmongo.entities.LoanedBook;
 import me.jack.lat.lmsbackendmongo.entities.User;
-import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
-import me.jack.lat.lmsbackendmongo.service.mongoDB.LoanedBookService;
-import me.jack.lat.lmsbackendmongo.service.mongoDB.UserService;
+
 import me.jack.lat.lmsbackendmongo.service.oracleDB.LoanFinesService;
 import me.jack.lat.lmsbackendmongo.util.DateUtil;
 
 import java.sql.Date;
 import java.text.ParseException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Path("/users/me/fines/paid/between")
 public class userFinesPaidBetweenDateResource {
@@ -27,7 +22,7 @@ public class userFinesPaidBetweenDateResource {
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userFinesPaidBetweenDate(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
+    public Response userFinesPaidBetweenDate(@Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
 
         if (startDate == null || startDate.isEmpty()) {
             // default startDate as today minus 30 days (as Date)
@@ -55,42 +50,12 @@ public class userFinesPaidBetweenDateResource {
                 return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
             }
 
-            if (databaseType == null || databaseType.isEmpty()) {
-                databaseType = DatabaseTypeEnum.MONGODB.toString();
-            }
-
-            if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-                return userFinesPaidBetweenDateSQL(userId, startDateDate, endDateDate);
-            } else {
-                return userFinesPaidBetweenDateMongoDB(userId, startDateDate, endDateDate);
-            }
+            return userFinesPaidBetweenDateSQL(userId, startDateDate, endDateDate);
 
         } catch (ParseException e) {
             response.put("message", "Failed to parse date: " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(response).type(MediaType.APPLICATION_JSON).build();
         }
-    }
-
-    public Response userFinesPaidBetweenDateMongoDB(String userId, Date startDate, Date endDate) {
-        Map<String, Object> response = new HashMap<>();
-
-        UserService userService = new UserService();
-        User user = userService.findUserById(userId);
-
-        LoanedBookService loanedBookService = new LoanedBookService();
-        List<LoanedBook> loanedBooks = loanedBookService.findPaidFinesForUserBetweenDate(user, startDate, endDate);
-
-        loanedBooks.forEach(loanedBook -> {
-            User loanedBookUser = loanedBook.getUser();
-
-            loanedBookUser.setUserPassword(null);
-            loanedBookUser.setRefreshTokens(null);
-            loanedBook.setUser(loanedBookUser);
-        });
-
-        response.put("loanedBooks", loanedBooks);
-
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     public Response userFinesPaidBetweenDateSQL(String userId, Date startDate, Date endDate) {

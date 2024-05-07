@@ -7,7 +7,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.jack.lat.lmsbackendmongo.annotations.RestrictedRoles;
 import me.jack.lat.lmsbackendmongo.entities.User;
-import me.jack.lat.lmsbackendmongo.enums.DatabaseTypeEnum;
 import me.jack.lat.lmsbackendmongo.service.oracleDB.LoanFinesService;
 
 import java.util.HashMap;
@@ -20,24 +19,11 @@ public class userFinesResource {
     @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userFines(@HeaderParam("Database-Type") String databaseType, @Context ContainerRequestContext requestContext) {
+    public Response userFines(@Context ContainerRequestContext requestContext) {
 
         String userId = (String) requestContext.getProperty("userId");
 
-        if (databaseType == null || databaseType.isEmpty()) {
-            databaseType = DatabaseTypeEnum.MONGODB.toString();
-        }
-
-        if (databaseType.equalsIgnoreCase(DatabaseTypeEnum.SQL.toString())) {
-            return userFinesSQL(userId);
-        } else {
-            return userFinesMongoDB(userId);
-        }
-    }
-
-    public Response userFinesMongoDB(String userId) {
-        Map<String, Object> response = new HashMap<>();
-        return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+        return userFinesSQL(userId);
     }
 
     public Response userFinesSQL(String userId) {
