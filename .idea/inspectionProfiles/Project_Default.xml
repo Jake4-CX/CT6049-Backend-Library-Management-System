@@ -7,7 +7,7 @@
     <inspection_tool class="IncorrectHttpHeaderInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="customHeaders">
         <set>
-          <option value="Database-Type" />
+<!--          <option value="Database-Type" />-->
         </set>
       </option>
     </inspection_tool>

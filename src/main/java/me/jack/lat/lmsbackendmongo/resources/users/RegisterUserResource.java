@@ -16,7 +16,7 @@ public class RegisterUserResource {
     @UnprotectedRoute
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(@HeaderParam("Database-Type") String databaseType, @Valid NewUser newUser) {
+    public Response createUser(@Valid NewUser newUser) {
         return createUserSQL(newUser);
 
     }
