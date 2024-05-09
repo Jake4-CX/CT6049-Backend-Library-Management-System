@@ -16,7 +16,7 @@ import java.util.Map;
 public class GetHistoryUserBookLoansResource {
 
     @GET
-    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHistoryUserBookLoans(@Context ContainerRequestContext requestContext) {
 

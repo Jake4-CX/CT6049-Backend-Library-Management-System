@@ -15,7 +15,7 @@ import java.util.Map;
 public class CreateCategoryResource {
 
     @POST
-    @RestrictedRoles({User.Role.ADMIN})
+    @RestrictedRoles({User.Role.CHIEF_LIBRARIAN})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBookCategory(@Valid NewBookCategory newBookCategory) {

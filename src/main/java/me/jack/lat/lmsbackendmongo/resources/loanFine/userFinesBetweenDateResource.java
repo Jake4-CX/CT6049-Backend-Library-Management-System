@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class userFinesBetweenDateResource {
 
     @GET
-    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN, User.Role.FINANCE_DIRECTOR})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response userFinesBetweenDate(@Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {

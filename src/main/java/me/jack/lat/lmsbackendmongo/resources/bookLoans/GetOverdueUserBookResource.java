@@ -17,7 +17,7 @@ import java.util.Map;
 public class GetOverdueUserBookResource {
 
     @GET
-    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN, User.Role.FINANCE_DIRECTOR})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOverdueUserBookLoans(@Context ContainerRequestContext requestContext) {
 

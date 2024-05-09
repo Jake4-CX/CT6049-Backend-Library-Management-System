@@ -18,7 +18,7 @@ import java.util.Map;
 public class GetAllUserBooksLoansBetweenDateResource {
 
     @GET
-    @RestrictedRoles({User.Role.USER, User.Role.ADMIN})
+    @RestrictedRoles({User.Role.USER, User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN, User.Role.FINANCE_DIRECTOR})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllUserBookLoansBetweenDate(@Context ContainerRequestContext requestContext, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
 

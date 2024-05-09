@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class AdminStatisticsBookCirculationResource {
 
     @GET
-    @RestrictedRoles({User.Role.ADMIN})
+    @RestrictedRoles({User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN, User.Role.FINANCE_DIRECTOR})
     @Produces(MediaType.APPLICATION_JSON)
     public Response adminStatisticsBookCirculation() {
         return adminStatisticsBookCirculationSQL();

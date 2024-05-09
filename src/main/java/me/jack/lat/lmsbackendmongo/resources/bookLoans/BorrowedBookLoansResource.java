@@ -15,7 +15,7 @@ import java.util.Map;
 public class BorrowedBookLoansResource {
 
     @GET
-    @RestrictedRoles({User.Role.ADMIN})
+    @RestrictedRoles({User.Role.CHIEF_LIBRARIAN, User.Role.LIBRARIAN, User.Role.FINANCE_DIRECTOR})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBorrowedBookLoans() {
         return getBorrowedBookLoansSQL();
