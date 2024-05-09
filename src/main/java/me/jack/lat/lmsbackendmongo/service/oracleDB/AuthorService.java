@@ -120,9 +120,47 @@ public class AuthorService {
 
     }
 
+    public Error deleteAuthor(Integer authorId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKAUTHORS SET ISDELETED = 1 WHERE id = ?");
+            preparedStatement.setInt(1, authorId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed deleting author");
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed deleting author: " + e.getMessage());
+            return new Error("Failed deleting author");
+        }
+    }
+
+    public Error recoverAuthor(Integer authorId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKAUTHORS SET ISDELETED = 0 WHERE id = ?");
+            preparedStatement.setInt(1, authorId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed recovering author");
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed recovering author: " + e.getMessage());
+            return new Error("Failed recovering author");
+        }
+    }
+
     private boolean isDuplicateAuthor(NewBookAuthor newAuthor) {
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT authorFirstName, authorLastName FROM BOOKAUTHORS WHERE authorFirstName = ? AND authorLastName = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT authorFirstName, authorLastName FROM BOOKAUTHORS WHERE authorFirstName = ? AND authorLastName = ? AND ISDELETED = 0");
             preparedStatement.setString(1, newAuthor.getAuthorFirstName());
             preparedStatement.setString(2, newAuthor.getAuthorLastName());
 
@@ -139,7 +177,7 @@ public class AuthorService {
         ArrayList<HashMap<String, Object>> authors = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKAUTHORS ORDER BY id");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKAUTHORS WHERE ISDELETED = 0 ORDER BY id");
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {

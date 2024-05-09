@@ -119,9 +119,47 @@ public class CategoryService {
         }
     }
 
+    public Error deleteCategory(Integer categoryId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKCATEGORIES SET ISDELETED = 1 WHERE id = ?");
+            preparedStatement.setInt(1, categoryId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed deleting category");
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed deleting category: " + e.getMessage());
+            return new Error("Failed deleting category");
+        }
+    }
+
+    public Error recoverCategory(Integer categoryId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKCATEGORIES SET ISDELETED = 0 WHERE id = ?");
+            preparedStatement.setInt(1, categoryId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed recovering category");
+            }
+
+        } catch (Exception e) {
+            logger.warning("Failed recovering category: " + e.getMessage());
+            return new Error("Failed recovering category");
+        }
+    }
+
     private boolean isDuplicateCategory(NewBookCategory newBookCategory) {
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT categoryName FROM BOOKCATEGORIES WHERE categoryName = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT categoryName FROM BOOKCATEGORIES WHERE categoryName = ? AND ISDELETED = 0");
             preparedStatement.setString(1, newBookCategory.getCategoryName());
 
             return preparedStatement.executeQuery().next();
@@ -136,7 +174,7 @@ public class CategoryService {
         ArrayList<HashMap<String, Object>> categories = new ArrayList<>();
 
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKCATEGORIES ORDER BY id");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM BOOKCATEGORIES ORDER BY id AND ISDELETED = 0");
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {

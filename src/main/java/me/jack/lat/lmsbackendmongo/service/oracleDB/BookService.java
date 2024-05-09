@@ -79,9 +79,53 @@ public class BookService {
 
     }
 
+    public Error deleteBook(Integer bookId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKS SET ISDELETED = 1 WHERE ID = ?");
+            preparedStatement.setInt(1, bookId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed deleting book");
+            }
+
+        } catch (SQLException e) {
+            logger.warning("SQL Error: " + e.getMessage());
+            return new Error("Failed deleting book: " + e.getMessage());
+        } catch (Exception e) {
+            logger.warning("General Error: " + e.getMessage());
+            return new Error("Failed deleting book: " + e.getMessage());
+        }
+    }
+
+    public Error recoverBook(Integer bookId) {
+        try (Connection connection = OracleDBUtil.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE BOOKS SET ISDELETED = 0 WHERE ID = ?");
+            preparedStatement.setInt(1, bookId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return null;
+            } else {
+                return new Error("Failed recovering book");
+            }
+
+        } catch (SQLException e) {
+            logger.warning("SQL Error: " + e.getMessage());
+            return new Error("Failed recovering book: " + e.getMessage());
+        } catch (Exception e) {
+            logger.warning("General Error: " + e.getMessage());
+            return new Error("Failed recovering book: " + e.getMessage());
+        }
+    }
+
     private boolean isDuplicateBookName(String bookName) {
         try (Connection connection = OracleDBUtil.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT bookName FROM BOOKS WHERE BOOKNAME = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT bookName FROM BOOKS WHERE BOOKNAME = ? AND ISDELETED = 0");
             preparedStatement.setString(1, bookName);
 
             return preparedStatement.executeQuery().next();
@@ -104,6 +148,7 @@ public class BookService {
                     + " FROM BOOKS b "
                     + " INNER JOIN bookAuthors a ON b.bookAuthorId = a.ID "
                     + " INNER JOIN bookCategories c ON b.bookCategoryId = c.ID "
+                    + " WHERE b.ISDELETED = 0 "
                     + " ORDER BY b.ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
             preparedStatement.setInt(1, (page - 1) * limit);
             preparedStatement.setInt(2, limit);
@@ -276,6 +321,7 @@ public class BookService {
                         + " INNER JOIN bookAuthors a ON b.bookAuthorId = a.ID "
                         + " INNER JOIN bookCategories c ON b.bookCategoryId = c.ID "
                         + " WHERE LOWER(b.bookName) LIKE LOWER(?) "
+                        + " AND b.ISDELETED = 0 "
                         + " ORDER BY b.ID");
                 preparedStatement.setString(1, "%" + searchQuery + "%");
 
